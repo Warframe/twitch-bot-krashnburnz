@@ -1,5 +1,9 @@
 package Model;
+import java.io.IOException;
 import java.util.ArrayList;
+
+import org.jibble.pircbot.IrcException;
+import org.jibble.pircbot.NickAlreadyInUseException;
 
 
 
@@ -26,7 +30,7 @@ public class MyBotMain {
 	private static ArrayList<String> the_ops = new ArrayList<String>();
 	
 	
-    public static void main(String[] args) throws Exception {
+    public MyBotMain(String[] args) {
     	BOTNAME = args[0];
     	my_channel = "#"+ args[1];
     	my_server_ip = args[2];
@@ -49,11 +53,21 @@ public class MyBotMain {
         bot.setVerbose(enable_verbose_debug);
         
         // Connect to the IRC server.
-        bot.connect(my_server_ip, my_server_port, my_login_password);
+       try {
+		bot.connect(my_server_ip, my_server_port, my_login_password);
+	} catch (NickAlreadyInUseException e) {
+		// TODO Auto-generated catch block
+		e.printStackTrace();
+	} catch (IOException e) {
+		// TODO Auto-generated catch block
+		e.printStackTrace();
+	} catch (IrcException e) {
+		// TODO Auto-generated catch block
+		e.printStackTrace();
+	}
 
         // Join the #pircbot channel.
         bot.joinChannel(my_channel);
-
-    }
-    
+	}
+   
 }

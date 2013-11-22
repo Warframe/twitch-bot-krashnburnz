@@ -27,6 +27,8 @@ import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JPasswordField;
 import javax.swing.JTextField;
+
+import Model.MyBotMain;
 import Model.User;
 
 public class MyBotLogin extends JPanel{
@@ -163,13 +165,34 @@ public class MyBotLogin extends JPanel{
 	  	//Login button listener setup.
 		btnConnect.addActionListener(new ActionListener() {
 		      public void actionPerformed(final ActionEvent the_event) {
-/*		      	BOTNAME = args[0];
-		    	my_channel = "#"+ args[1];
-		    	my_server_ip = args[2];
-		    	my_server_port = Integer.parseInt(args[3]);
-		    	my_login_password = args[4];
-		    	CHANNEL_OWNER = args[1];
-		    	POINTS_NAME = args[5];*/
+		    	  String botName = getBotName();
+		    	  String channelName = getChannelName();
+		    	  String botPassword = getBotPassword();
+		    	  String twitchIp = getTwitchIp();
+		    	  String twitchPort = getTwitchPort();
+		    	  String pointName = getPointName();
+		    	  if(botName.isEmpty()) {
+		    		  
+		    	  } else if(channelName.isEmpty()) {
+		    		  
+		    	  } else if(botPassword.isEmpty()) {
+		    		  
+		    	  } else if(twitchIp.isEmpty()) {
+		    		  
+		    	  } else if(twitchPort.isEmpty()) {
+		    		  
+		    	  } else if(pointName.isEmpty()) {
+		    		  
+		    	  } else {
+		    		  String [] myArgs = new String [6];
+		    		  myArgs[0] = botName;
+		    		  myArgs[1] = channelName;
+		    		  myArgs[2] = botPassword;
+		    		  myArgs[3] = twitchIp;
+		    		  myArgs[4] = twitchPort;
+		    		  myArgs[5] = pointName;
+			    	  MyBotMain thebot = new MyBotMain(myArgs);
+		    	  }
 		      }
 		});
 		
