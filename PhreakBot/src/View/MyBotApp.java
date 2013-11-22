@@ -14,8 +14,10 @@ import java.awt.event.ActionListener;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.util.ArrayList;
 import java.util.Map;
@@ -65,6 +67,8 @@ public class MyBotApp extends JFrame implements Observer{		//can't extend JPanel
 		Container logoutbtn = btnLayout();
 		//containers.setPreferredSize(new Dimension(250, 250));
 		
+		//try to load user settings if exists
+		loadFile();
 		primaryPanel.add(loginScreen);
 		primaryPanel.setPreferredSize(new Dimension(500, 500));
 		primaryPanel.setVisible(true);
@@ -148,6 +152,44 @@ public class MyBotApp extends JFrame implements Observer{		//can't extend JPanel
 	          i.printStackTrace();
 	      }
 	    }
+	
+	/**
+	 * Method that will load user settings and set the GUI connection window
+	 * to that saves information.
+	 * 
+	 * @return ArrayList<String> to be loaded
+	 */
+	@SuppressWarnings("unchecked")
+	private void loadFile(){
+	         try {
+	        	ArrayList<String> user_settings;
+	            FileInputStream fileIn = new FileInputStream("user_settings.txt");
+	            ObjectInputStream in = new ObjectInputStream(fileIn);
+	            user_settings = (ArrayList<String>) in.readObject();
+	            in.close();
+	            fileIn.close();
+	        	System.out.println("User settings loaded successfully.");
+	        	 loginWindow.setSaveCreds(true); //the exists, so make sure this box is checked
+	        	 //Set the Connection window to the saved settings
+					loginWindow.setChannelName(user_settings.get(0));
+					loginWindow.setBotName(user_settings.get(1));
+					loginWindow.setBotPassword(user_settings.get(2));
+					loginWindow.setTwitchIp(user_settings.get(3));
+					loginWindow.setTwitchPort(user_settings.get(4));
+					loginWindow.setPointName(user_settings.get(5));
+	         }
+	         catch (IOException i) {
+	        	 loginWindow.setSaveCreds(false); //If file doesn't exist, set the check box to false
+		        	System.out.println("IO exception occured while trying to load the saved user settings.");
+	            i.printStackTrace();
+	         }
+	         catch (ClassNotFoundException c) {
+	        	 loginWindow.setSaveCreds(false); //If file doesn't exist, set the check box to false
+		        	System.out.println("Class exception occured while trying to load user settings file.");
+	            c.printStackTrace();
+	        }
+	    }
+	
 	
 	/**
 	 * Sets up logout button.

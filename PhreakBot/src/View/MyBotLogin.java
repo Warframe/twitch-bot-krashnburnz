@@ -253,6 +253,7 @@ public class MyBotLogin extends JPanel{
 		
 	}
 	
+	//getters
 	public String getChannelName() {
 		return txtChannelName.getText();
 	}
@@ -275,6 +276,36 @@ public class MyBotLogin extends JPanel{
 	
 	public String getPointName() {
 		return txtPointName.getText();
+	}
+	
+	// Setters
+	public void setSaveCreds(boolean the_answer) {
+		cboxCredsSave.setSelected(the_answer);
+		
+	}
+	
+	public void setChannelName(String the_text) {
+		txtChannelName.setText(the_text);
+	}
+
+	public void setBotName(String the_text) {
+		txtBotname.setText(the_text);
+	}
+	
+	public void setBotPassword(String the_text) {
+		txtPassword.setText(the_text);
+	}
+	
+	public void setTwitchIp(String the_text) {
+		txtTwitchIP.setText(the_text);
+	}
+	
+	public void setTwitchPort(String the_text) {
+		txtTwitchPort.setText(the_text);
+	}
+	
+	public void setPointName(String the_text) {
+		txtPointName.setText(the_text);
 	}
 	
 } 
