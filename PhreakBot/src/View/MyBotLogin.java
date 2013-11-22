@@ -203,9 +203,18 @@ public class MyBotLogin extends JPanel{
 		btnOathKey.addActionListener(new ActionListener() {
 		      public void actionPerformed(final ActionEvent the_event) {
 		    	  if (the_event.getSource() == btnOathKey) {
-		    				  JOptionPane.showMessageDialog(null, "You can get your oath key from www.twitch.tv/YourBotNameHere/?chat_debug=true"); 
-		    			  }
+		    		  String botName = getBotName();
+		    		  if(botName.isEmpty()) {
+		    			  JOptionPane.showMessageDialog(null, "You can get your oath key from www.twitch.tv/YourBotNameHere/?chat_debug=true \n" +
+		    					  								"\n" + 
+		    					  								"Please be sure you log into twitch with your BOT INFORMATION to get your bot's oathkey!");
+		    		  } else {
+		    			  JOptionPane.showMessageDialog(null, "You can get your oath key from www.twitch.tv/"+botName+"/?chat_debug=true\n" +
+		    					  								"\n" + 
+		    					  								"Please be sure you log into twitch with your BOT INFORMATION to get your bot's oathkey!");
 		    		  }
+		    		}
+		    	}
 		      });
 
 
