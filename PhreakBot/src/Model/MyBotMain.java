@@ -33,9 +33,9 @@ public class MyBotMain {
     public MyBotMain(String[] args) {
     	BOTNAME = args[0];
     	my_channel = "#"+ args[1];
-    	my_server_ip = args[2];
-    	my_server_port = Integer.parseInt(args[3]);
-    	my_login_password = args[4];
+    	my_server_ip = args[3];
+    	my_server_port = Integer.parseInt(args[4]);
+    	my_login_password = args[2];
     	CHANNEL_OWNER = args[1];
     	POINTS_NAME = args[5];
     	
