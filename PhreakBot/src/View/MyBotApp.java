@@ -107,9 +107,13 @@ public class MyBotApp extends JFrame implements Observer{		//can't extend JPanel
 					int result = JOptionPane.showConfirmDialog(null, 
 							"Are you sure you want to quit the program?", 
 							"Exit Program", 
-							JOptionPane.YES_NO_OPTION);
-						if(loginWindow.getSaveCreds()) { //if savecreds is clicked, save data to file
+							JOptionPane.YES_NO_OPTION);				
+					if (result == JOptionPane.OK_OPTION) {
+						//controller.saveData();
+						MyBotApp.this.dispose();
+						if(loginWindow.getSaveCreds()) { //if save credentials is clicked, save data to file
 							ArrayList<String> user_settings = new ArrayList<String>();
+							//this will not check for empty boxes, concatenate with an empty string the contents
 							user_settings.add("" + loginWindow.getChannelName());
 							user_settings.add("" + loginWindow.getBotName());
 							user_settings.add("" + loginWindow.getBotPassword());
@@ -117,10 +121,7 @@ public class MyBotApp extends JFrame implements Observer{		//can't extend JPanel
 							user_settings.add("" + loginWindow.getTwitchPort());
 							user_settings.add("" + loginWindow.getPointName());
 							saveFile(user_settings, "user_settings.txt");
-						}					
-					if (result == JOptionPane.OK_OPTION) {
-						//controller.saveData();
-						MyBotApp.this.dispose();
+						}	
 					} 
 				}
 			} //windowClosing
