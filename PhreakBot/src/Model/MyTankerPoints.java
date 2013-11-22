@@ -1,20 +1,21 @@
+package Model;
 import java.util.Observable;
 
 
-public class MyKeywordEntry extends Observable implements Runnable{
+public class MyTankerPoints extends Observable implements Runnable{
 
 	private String my_users;
 	//private static final long totalTime = 5000;	
 	//private long startEntryTime;
 	
-	public MyKeywordEntry() {
+	public MyTankerPoints() {
 		my_users = "";
 		//startEntryTime = System.currentTimeMillis();
 	}
 	@Override
 	public synchronized void run() {
 		 try {
-			wait(10000);
+			wait(12000);
 		} catch (InterruptedException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -25,7 +26,7 @@ public class MyKeywordEntry extends Observable implements Runnable{
 			    	notifyObservers();
 			 }
 			 try {
-				wait(10000);
+				wait(12000);
 			} catch (InterruptedException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
@@ -33,11 +34,11 @@ public class MyKeywordEntry extends Observable implements Runnable{
 		}
 	}
 
-	public void addUser(String sender) {
+	public void addUser(String sender, int points) {
 		if(my_users.length() < 3) {
-			my_users = my_users + sender;
+			my_users = my_users + sender + " [" + points + "]";
 		} else {
-			my_users = my_users + ", " + sender;	
+			my_users = my_users + ", " +sender + " [" + points + "]";	
 		}
 
 	}

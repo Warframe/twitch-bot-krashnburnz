@@ -1,30 +1,40 @@
+package Model;
 import java.util.ArrayList;
 
 
 
 public class MyBotMain {
     
-	//GENERAL BOT SETTING
-
-	private static final String BOTNAME = "NoroBot";
-	private static final String my_channel = "#noroimusha";
-	private static final String my_server_ip = "199.9.250.229";
-	private static final int my_server_port = 6667;
-	private static final String my_login_password = "151515";
-	private static final boolean enable_verbose_debug = true;
+	//Connection Settings
+	private static String BOTNAME;
+	private static String my_channel;
+	private static String my_server_ip;
+	private static int my_server_port;
+	private static String my_login_password;
+	private static String CHANNEL_OWNER;
+	private static String POINTS_NAME;
 	
+	//General Settings
 	private static final boolean LOTTERY_ENABLED_ON_STARTUP = false;
 	private static final int LOTTERY_COST = 5;
 	private static final int LOTTERY_TIMER_MILLISEC = 1800000;
 	private static final boolean ACCUMULATE_POINTS_ON_STARTUP = true;
-	private static final String CHANNEL_OWNER = "noroimusha";
 	private static final String[] CHANNEL_OP1 = {"krashnburnz"};
-	private static final String POINTS_NAME = "piratepoints";
-
+	private static final boolean enable_verbose_debug = true;
+	
+	//Container to hold Channel Mods
 	private static ArrayList<String> the_ops = new ArrayList<String>();
 	
 	
     public static void main(String[] args) throws Exception {
+    	BOTNAME = args[0];
+    	my_channel = "#"+ args[1];
+    	my_server_ip = args[2];
+    	my_server_port = Integer.parseInt(args[3]);
+    	my_login_password = args[4];
+    	CHANNEL_OWNER = args[1];
+    	POINTS_NAME = args[5];
+    	
 		System.out.println(System.getProperty("user.dir"));
 		
 		//create Channel operators list
