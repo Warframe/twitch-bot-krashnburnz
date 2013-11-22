@@ -19,6 +19,7 @@ import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import javax.swing.BorderFactory;
 import javax.swing.JButton;
+import javax.swing.JCheckBox;
 import javax.swing.JDialog;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
@@ -40,24 +41,35 @@ public class MyBotLogin extends JPanel{
 	private JButton btnConnect;	
 	private JButton btnDonate;	
 	private JButton btnRegisterNow;	
-	private JButton btnAbout;
+
+		
+	//Bot name
+	private JLabel labelBotname;
+	private JTextField txtBotname;
 	
-	private JTextField txtBotname;	
+	//Streamer name
+	private JLabel labelMyChannelName;
+	private JTextField txtChannelName;
+	
+	//Twitch IP
+	private JLabel labelTwitchIP;
+	private JTextField txtTwitchIP;
+	
+	//Twitch port
+	private JLabel labelTwitchPort;
+	private JTextField txtTwitchPort;
+	
+	//Both Login password
+	private JLabel labelPassword;
 	private JPasswordField txtPassword;	
 	
-	private JTextField txtChannelName;
-	private JTextField txtTwitchIP;
-	private JTextField txtTwitchPort;
-
-	
-	
-	private JLabel labelBotname;	
-	private JLabel labelMyChannelName;
-	private JLabel labelTwitchIP;
-	private JLabel labelTwitchPort;
-	private JLabel labelPassword;
+	//Point name
 	private JLabel labelPointsName;
+	private JTextField txtPointName;
+	
+	//Save Credentials
 	private JLabel labelSaveCreds;
+	private JCheckBox cboxCredsSave;
 	
 	
     private Dimension windowSize;
@@ -78,28 +90,64 @@ public class MyBotLogin extends JPanel{
 	private void setup() {
 		this.setLayout(new FlowLayout());
 		windowSize = new Dimension(400, 250);
-		Dimension loginSize = new Dimension(200, 300);
+		Dimension loginSize = new Dimension(200, 400);
 		this.setPreferredSize(loginSize);
-		
+		Dimension txtsize = new Dimension(200, 25);
+		//Bot Name
 		labelBotname = new JLabel("Bot Name: ");
-		labelMyChannelName = new JLabel("Channel Name: ");
-		
-		setupBtns();
 		txtBotname = new JTextField();
-		txtPassword = new JPasswordField();
-		
-		txtBotname.setPreferredSize(new Dimension(200, 25));
-		txtPassword.setPreferredSize(new Dimension(200, 25));
-		
-		//Add Components to 
+		txtBotname.setPreferredSize(txtsize);
 		this.add(labelBotname);
 		this.add(txtBotname);
 		
-		this.add(labelMyChannelName);
+		//Both Login password
+		labelPassword= new JLabel("Login Password: ");;
+		txtPassword= new JPasswordField();	
+		txtPassword.setPreferredSize(txtsize);
+		this.add(labelPassword);
 		this.add(txtPassword);
+		
+		//Streamer name
+		labelMyChannelName = new JLabel("Channel Name: ");
+		txtChannelName = new JTextField();
+		txtChannelName.setPreferredSize(txtsize);
+		this.add(labelMyChannelName);
+		this.add(txtChannelName);
+		
+		//Twitch IP
+		labelTwitchIP= new JLabel("Twitch IP: ");
+		txtTwitchIP = new JTextField("199.9.250.229");
+		txtTwitchIP.setPreferredSize(txtsize);
+		this.add(labelTwitchIP);
+		this.add(txtTwitchIP);
+		
+		//Twitch port
+		labelTwitchPort= new JLabel("Twitch Port: ");
+		txtTwitchPort = new JTextField("6667");
+		txtTwitchPort.setPreferredSize(txtsize);
+		this.add(labelTwitchPort);
+		this.add(txtTwitchPort);
+
+		
+		//Point name
+		labelPointsName= new JLabel("Points Name: ");;
+		txtPointName = new JTextField();
+		txtPointName.setPreferredSize(txtsize);
+		this.add(labelPointsName);
+		this.add(txtPointName);
+		
+		//Save Credentials
+		labelSaveCreds= new JLabel("Save Credentials?");;
+		cboxCredsSave = new JCheckBox();
+		cboxCredsSave.setSelected(true);
+		this.add(labelSaveCreds);
+		this.add(cboxCredsSave);
+
+		
+		//call method to create button and listeners
+		setupBtns();
 		this.add(btnConnect);
 		this.add(btnDonate);	
-		this.add(btnAbout);
 	}
 	
 	/**
@@ -110,24 +158,22 @@ public class MyBotLogin extends JPanel{
 		btnConnect = new JButton("Connect");
 		btnDonate = new JButton("Donate");
 	  	btnRegisterNow = new JButton("Register");
-	  	btnAbout = new JButton("About");
+
 
 	  	//Login button listener setup.
 		btnConnect.addActionListener(new ActionListener() {
 		      public void actionPerformed(final ActionEvent the_event) {
-}
-		      });
+/*		      	BOTNAME = args[0];
+		    	my_channel = "#"+ args[1];
+		    	my_server_ip = args[2];
+		    	my_server_port = Integer.parseInt(args[3]);
+		    	my_login_password = args[4];
+		    	CHANNEL_OWNER = args[1];
+		    	POINTS_NAME = args[5];*/
+		      }
+		});
 		
-		//About button listener setup.
-		btnAbout.addActionListener(new ActionListener() {
-		      public void actionPerformed(final ActionEvent the_event) {
-		    	  if (the_event.getSource() == btnAbout) {
 
-		    				  JOptionPane.showMessageDialog(null, "Created by: Daniel Henderson \n" +
-		    						  							  "Contact Email: krashnburnz@yahoo.com \n"); 
-		    			  }
-		    		  }
-		      });
 		
 		//Register button listener setup (Register button on main login window)
 		btnDonate.addActionListener(new ActionListener() {
@@ -197,4 +243,38 @@ public class MyBotLogin extends JPanel{
 		container.add(spaceBuff2, c);
 		container.add(btnRegisterNow, c);
 	}
+	/**
+	 * Helper method that will return a boolean value as to whether
+	 * the save crednetials button is checked.
+	 * @return Boolean True is checked, false otherwise
+	*/
+	public boolean getSaveCreds() {
+		return cboxCredsSave.isSelected();
+		
+	}
+	
+	public String getChannelName() {
+		return txtChannelName.getText();
+	}
+
+	public String getBotName() {
+		return txtBotname.getText();
+	}
+	
+	public String getBotPassword() {
+		return String.valueOf(txtPassword.getPassword());
+	}
+	
+	public String getTwitchIp() {
+		return txtTwitchIP.getText();
+	}
+	
+	public String getTwitchPort() {
+		return txtTwitchPort.getText();
+	}
+	
+	public String getPointName() {
+		return txtPointName.getText();
+	}
+	
 } 

@@ -14,6 +14,11 @@ import java.awt.event.ActionListener;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.ObjectOutputStream;
+import java.util.ArrayList;
+import java.util.Map;
 import java.util.Observable;
 import java.util.Observer;
 
@@ -103,7 +108,16 @@ public class MyBotApp extends JFrame implements Observer{		//can't extend JPanel
 							"Are you sure you want to quit the program?", 
 							"Exit Program", 
 							JOptionPane.YES_NO_OPTION);
-					
+						if(loginWindow.getSaveCreds()) { //if savecreds is clicked, save data to file
+							ArrayList<String> user_settings = new ArrayList<String>();
+							user_settings.add("" + loginWindow.getChannelName());
+							user_settings.add("" + loginWindow.getBotName());
+							user_settings.add("" + loginWindow.getBotPassword());
+							user_settings.add("" + loginWindow.getTwitchIp());
+							user_settings.add("" + loginWindow.getTwitchPort());
+							user_settings.add("" + loginWindow.getPointName());
+							saveFile(user_settings, "user_settings.txt");
+						}					
 					if (result == JOptionPane.OK_OPTION) {
 						//controller.saveData();
 						MyBotApp.this.dispose();
@@ -112,6 +126,27 @@ public class MyBotApp extends JFrame implements Observer{		//can't extend JPanel
 			} //windowClosing
 		});
 	} //closeWindow
+	
+	/**
+	 * Method that will Serialize the User Settingsto file.
+	 * 
+	 * @param ArrayList<String> the_settings Settings from the GUI connection window
+	 * @param String The file name
+	 */
+	private void saveFile(ArrayList<String> the_settings, String the_name) {   
+	      try {
+	         FileOutputStream fileOut = new FileOutputStream(the_name);
+	         ObjectOutputStream out = new ObjectOutputStream(fileOut);
+	         out.writeObject(the_settings);
+	         out.close();
+	         fileOut.close();
+	        	System.out.println("Saving User Settings to file");
+	      }
+	      catch(IOException i) {
+	        	System.out.println("Failure to save settings to file.");
+	          i.printStackTrace();
+	      }
+	    }
 	
 	/**
 	 * Sets up logout button.
