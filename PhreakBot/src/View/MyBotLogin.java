@@ -43,6 +43,7 @@ public class MyBotLogin extends JPanel{
 	private JButton btnConnect;	
 	private JButton btnDonate;	
 	private JButton btnRegisterNow;	
+	private JButton btnOathKey;
 
 		
 	//Bot name
@@ -103,7 +104,7 @@ public class MyBotLogin extends JPanel{
 		this.add(txtBotname);
 		
 		//Both Login password
-		labelPassword= new JLabel("Login Password: ");;
+		labelPassword= new JLabel("Twitch Oath Key: ");;
 		txtPassword= new JPasswordField();	
 		txtPassword.setPreferredSize(txtsize);
 		this.add(labelPassword);
@@ -149,7 +150,8 @@ public class MyBotLogin extends JPanel{
 		//call method to create button and listeners
 		setupBtns();
 		this.add(btnConnect);
-		this.add(btnDonate);	
+		this.add(btnDonate);
+		this.add(btnOathKey);
 	}
 	
 	/**
@@ -157,6 +159,7 @@ public class MyBotLogin extends JPanel{
 	 * via inner classes for each button.
 	 */
 	private void setupBtns() {
+		btnOathKey = new JButton("Find OathKey");
 		btnConnect = new JButton("Connect");
 		btnDonate = new JButton("Donate");
 	  	btnRegisterNow = new JButton("Register");
@@ -172,17 +175,17 @@ public class MyBotLogin extends JPanel{
 		    	  String twitchPort = getTwitchPort();
 		    	  String pointName = getPointName();
 		    	  if(botName.isEmpty()) {
-		    		  
+		    		  JOptionPane.showMessageDialog(null, "Please type a bot name."); 
 		    	  } else if(channelName.isEmpty()) {
-		    		  
+		    		  JOptionPane.showMessageDialog(null, "Please type a channel name."); 
 		    	  } else if(botPassword.isEmpty()) {
-		    		  
+		    		  JOptionPane.showMessageDialog(null, "Please type a password."); 
 		    	  } else if(twitchIp.isEmpty()) {
-		    		  
+		    		  JOptionPane.showMessageDialog(null, "Please type an IP adress for Twitch."); 
 		    	  } else if(twitchPort.isEmpty()) {
-		    		  
+		    		  JOptionPane.showMessageDialog(null, "Please type a Port for Twitch."); 
 		    	  } else if(pointName.isEmpty()) {
-		    		  
+		    		  JOptionPane.showMessageDialog(null, "Please type the name you want your channel points to be called."); 
 		    	  } else {
 		    		  String [] myArgs = new String [6];
 		    		  myArgs[0] = botName;
@@ -196,6 +199,15 @@ public class MyBotLogin extends JPanel{
 		      }
 		});
 		
+		//About button listener setup.
+		btnOathKey.addActionListener(new ActionListener() {
+		      public void actionPerformed(final ActionEvent the_event) {
+		    	  if (the_event.getSource() == btnOathKey) {
+		    				  JOptionPane.showMessageDialog(null, "You can get your oath key from www.twitch.tv/YourBotNameHere/?chat_debug=true"); 
+		    			  }
+		    		  }
+		      });
+
 
 		
 		//Register button listener setup (Register button on main login window)
