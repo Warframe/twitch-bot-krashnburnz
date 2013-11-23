@@ -9,6 +9,7 @@ package View;
 
 import java.awt.Color;
 import java.awt.Container;
+import java.awt.Desktop;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
 import java.awt.GridBagConstraints;
@@ -17,6 +18,11 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
+import java.net.MalformedURLException;
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.net.URL;
+
 import javax.swing.BorderFactory;
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
@@ -73,6 +79,7 @@ public class MyBotLogin extends JPanel{
 	//Save Credentials
 	private JLabel labelSaveCreds;
 	private JCheckBox cboxCredsSave;
+	private MyBotApp mainBotApp;
 	
 	
     private Dimension windowSize;
@@ -80,10 +87,12 @@ public class MyBotLogin extends JPanel{
 	
 	/**
 	 * Constructor for the login class
+	 * @param myBotApp 
 	 * @param Controller the main controller class for the program
 	 */
-	public MyBotLogin() {
+	public MyBotLogin(MyBotApp myBotApp) {
 		this.setLayout(new FlowLayout());
+		mainBotApp = myBotApp;
 		setup();
 	} //Login
 	
@@ -154,6 +163,25 @@ public class MyBotLogin extends JPanel{
 		this.add(btnOathKey);
 	}
 	
+	public static void openWebpage(URL url) {
+	    try {
+	        openWebpage(url.toURI());
+	    } catch (URISyntaxException e) {
+	        e.printStackTrace();
+	    }
+	}
+	
+	public static void openWebpage(URI uri) {
+	    Desktop desktop = Desktop.isDesktopSupported() ? Desktop.getDesktop() : null;
+	    if (desktop != null && desktop.isSupported(Desktop.Action.BROWSE)) {
+	        try {
+	            desktop.browse(uri);
+	        } catch (Exception e) {
+	            e.printStackTrace();
+	        }
+	    }
+	}
+	
 	/**
 	 * Helper method that sets up the various buttons and Listeners
 	 * via inner classes for each button.
@@ -175,17 +203,17 @@ public class MyBotLogin extends JPanel{
 		    	  String twitchPort = getTwitchPort();
 		    	  String pointName = getPointName();
 		    	  if(botName.isEmpty()) {
-		    		  JOptionPane.showMessageDialog(null, "Please type a bot name."); 
+		    		  JOptionPane.showMessageDialog(null, "Required information missing! Please type a bot name."); 
 		    	  } else if(channelName.isEmpty()) {
-		    		  JOptionPane.showMessageDialog(null, "Please type a channel name."); 
+		    		  JOptionPane.showMessageDialog(null, "Required information missing! Please type a channel name."); 
 		    	  } else if(botPassword.isEmpty()) {
-		    		  JOptionPane.showMessageDialog(null, "Please type a password."); 
+		    		  JOptionPane.showMessageDialog(null, "Required information missing! Please type a password."); 
 		    	  } else if(twitchIp.isEmpty()) {
-		    		  JOptionPane.showMessageDialog(null, "Please type an IP adress for Twitch."); 
+		    		  JOptionPane.showMessageDialog(null, "Required information missing! Please type an IP adress for Twitch."); 
 		    	  } else if(twitchPort.isEmpty()) {
-		    		  JOptionPane.showMessageDialog(null, "Please type a Port for Twitch."); 
+		    		  JOptionPane.showMessageDialog(null, "Required information missing! Please type a Port for Twitch."); 
 		    	  } else if(pointName.isEmpty()) {
-		    		  JOptionPane.showMessageDialog(null, "Please type the name you want your channel points to be called."); 
+		    		  JOptionPane.showMessageDialog(null, "Required information missing! Please type the name you want your channel points to be called."); 
 		    	  } else {
 		    		  String [] myArgs = new String [6];
 		    		  myArgs[0] = botName;
@@ -194,7 +222,7 @@ public class MyBotLogin extends JPanel{
 		    		  myArgs[3] = twitchIp;
 		    		  myArgs[4] = twitchPort;
 		    		  myArgs[5] = pointName;
-			    	  MyBotMain thebot = new MyBotMain(myArgs);
+		    		  mainBotApp.tryConnect(myArgs);
 		    	  }
 		      }
 		});
@@ -222,7 +250,12 @@ public class MyBotLogin extends JPanel{
 		//Register button listener setup (Register button on main login window)
 		btnDonate.addActionListener(new ActionListener() {
 		      public void actionPerformed(final ActionEvent the_event) {
-		    	  
+		    	  try {
+					openWebpage(new URL("https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=AZ7PBS9ZSQLQA"));
+				} catch (MalformedURLException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
 		        }
 		      });
 		
@@ -297,6 +330,10 @@ public class MyBotLogin extends JPanel{
 		
 	}
 	
+
+
+
+	
 	//getters
 	public String getChannelName() {
 		return txtChannelName.getText();
@@ -320,6 +357,11 @@ public class MyBotLogin extends JPanel{
 	
 	public String getPointName() {
 		return txtPointName.getText();
+	}
+	
+	public MyBotMain getBotMain() {
+		return null;
+		
 	}
 	
 	// Setters

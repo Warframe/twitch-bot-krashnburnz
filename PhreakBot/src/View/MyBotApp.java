@@ -30,6 +30,9 @@ import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
+
+import Model.MyBot;
+import Model.MyBotMain;
 import Model.User;
 
 /**
@@ -46,6 +49,9 @@ public class MyBotApp extends JFrame implements Observer{		//can't extend JPanel
 	private JButton logout;
 	private JPanel primaryPanel;
 	private JLabel name;
+	private MyBotMain thebotMain;
+	private MyBot theBot;
+	private boolean connectFlag;
 
 
 	//programFrame.setPreferredSize(new Dimension(800, 800));
@@ -58,9 +64,10 @@ public class MyBotApp extends JFrame implements Observer{		//can't extend JPanel
 	 * @param programFrame 
 	 */
 	public MyBotApp() {
+		connectFlag = false;
 		primaryPanel = new JPanel();
 		name = new JLabel("");
-		loginWindow = new MyBotLogin();
+		loginWindow = new MyBotLogin(this);
 		logout = logoutBtn(this);
 		logout.setEnabled(false);
 		Container loginScreen = wrapComponents();
@@ -125,6 +132,12 @@ public class MyBotApp extends JFrame implements Observer{		//can't extend JPanel
 							user_settings.add("" + loginWindow.getTwitchPort());
 							user_settings.add("" + loginWindow.getPointName());
 							saveFile(user_settings, "user_settings.txt");
+							if(connectFlag) {
+								theBot.disconnect();
+								theBot.dispose();
+								System.exit(0);
+							}
+
 						}	
 					} 
 				}
@@ -259,5 +272,11 @@ public class MyBotApp extends JFrame implements Observer{		//can't extend JPanel
 	@Override
 	public void update(Observable arg0, Object arg1) {
 		
+	}
+	
+	public void tryConnect(String[] myArgs) {
+		thebotMain = new MyBotMain(myArgs);
+		theBot = thebotMain.getCreatedBot();
+		connectFlag = true;
 	}
 } //class

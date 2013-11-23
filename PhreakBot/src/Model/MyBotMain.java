@@ -25,6 +25,7 @@ public class MyBotMain {
 	private static final boolean ACCUMULATE_POINTS_ON_STARTUP = true;
 	private static final String[] CHANNEL_OP1 = {"krashnburnz"};
 	private static final boolean enable_verbose_debug = true;
+	private MyBot bot;
 	
 	//Container to hold Channel Mods
 	private static ArrayList<String> the_ops = new ArrayList<String>();
@@ -47,7 +48,7 @@ public class MyBotMain {
 		}
 		
         // Now start our bot up.
-        MyBot bot = new MyBot(BOTNAME, LOTTERY_ENABLED_ON_STARTUP, ACCUMULATE_POINTS_ON_STARTUP,the_ops, CHANNEL_OWNER, POINTS_NAME, LOTTERY_COST, LOTTERY_TIMER_MILLISEC, my_channel);
+        bot = new MyBot(BOTNAME, LOTTERY_ENABLED_ON_STARTUP, ACCUMULATE_POINTS_ON_STARTUP,the_ops, CHANNEL_OWNER, POINTS_NAME, LOTTERY_COST, LOTTERY_TIMER_MILLISEC, my_channel);
         
         // Enable debugging output.
         bot.setVerbose(enable_verbose_debug);
@@ -69,5 +70,9 @@ public class MyBotMain {
         // Join the #pircbot channel.
         bot.joinChannel(my_channel);
 	}
+    
+    public MyBot getCreatedBot() {
+    	return bot;
+    }
    
 }

@@ -12,6 +12,8 @@ import java.util.Map.Entry;
 import java.util.Observable;
 import java.util.Set;
 
+import org.jibble.pircbot.PircBot;
+
 
 
 
@@ -118,10 +120,13 @@ public class MyBotUserPoints extends Observable implements Runnable, Serializabl
         		new_User = my_Users[i];	
     		}
     	}
-		if(new_User != null) {
+		if(new_User != null && UsersMap.get(new_User) != null) {
     		return UsersMap.get(new_User);
+		} else {
+			System.out.println("User is new, or has not updated in system yet!");	
+	    	return 0;
 		}
-    	return 0;
+
 	
 	}
 	

@@ -379,7 +379,13 @@ public class MyBot extends PircBot implements Observer{
         if (command.equalsIgnoreCase("!" + my_points_name)) {
         	if(!tankerPointsQue.contains(sender.toLowerCase())) { //Only adds new users.
         		tankerPointsQue.add(sender.toLowerCase());
-            	my_userTankerPoints.addUser(sender, my_botUsers.getMyCurrentPoints(sender.toLowerCase()));
+        		int botUserPoints = my_botUsers.getMyCurrentPoints(sender.toLowerCase());
+            	my_userTankerPoints.addUser(sender, botUserPoints);
+            	if(botUserPoints == 0){
+        			sendMessage(my_channel, "Notice : " + sender + ", you are either a new viewer, or the system has not updated your points yet. Please wait a few minutes and try again.");
+
+            	}
+
         	}
         }
         
