@@ -11,6 +11,7 @@ import java.awt.Dimension;
 import java.awt.FlowLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.KeyEvent;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.io.File;
@@ -29,10 +30,16 @@ import java.util.Scanner;
 
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
+import javax.swing.JCheckBoxMenuItem;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
+import javax.swing.JMenu;
+import javax.swing.JMenuBar;
+import javax.swing.JMenuItem;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
+import javax.swing.JRadioButtonMenuItem;
+import javax.swing.KeyStroke;
 
 import Model.MyBot;
 import Model.MyBotMain;
@@ -57,6 +64,7 @@ public class MyBotApp extends JFrame implements Observer{		//can't extend JPanel
 	private boolean connectFlag;
 	private ArrayList<String> thebetaUsers;
 	private boolean duringClosedbeta = true;
+	private final JCheckBoxMenuItem debugSettingItem;
 
 
 	//programFrame.setPreferredSize(new Dimension(800, 800));
@@ -69,6 +77,56 @@ public class MyBotApp extends JFrame implements Observer{		//can't extend JPanel
 	 * @param programFrame 
 	 */
 	public MyBotApp() {
+		//create menu bar for window
+		JMenuBar menuBar = new JMenuBar();;
+		JMenu file = new JMenu("File");
+		JMenu settings = new JMenu("Settings");
+		settings.setMnemonic(KeyEvent.VK_S);
+		settings.getAccessibleContext().setAccessibleDescription(
+		        "General Bot Settings");
+		file.setMnemonic(KeyEvent.VK_F);
+		file.getAccessibleContext().setAccessibleDescription(
+		        "File Settings");
+
+		
+		JMenuItem exiMenuItem = new JMenuItem("Exit",
+                KeyEvent.VK_T);
+		debugSettingItem = new JCheckBoxMenuItem("Debug ON");
+		debugSettingItem.setEnabled(false);
+		debugSettingItem.setState(false);
+		debugSettingItem.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent event) {
+                if (debugSettingItem.isSelected()) {
+                	thebotMain.isDebugOn(true);
+                } else {
+                	thebotMain.isDebugOn(false);
+                }
+              }
+
+          });
+		exiMenuItem.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_1, ActionEvent.ALT_MASK));
+		exiMenuItem.getAccessibleContext().setAccessibleDescription("This doesn't really do anything");
+		exiMenuItem.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent event) {
+        		if(connectFlag) {
+        			theBot.disconnect();
+        			theBot.dispose();
+        			System.exit(0);
+        		} else {
+        			System.exit(0);
+        		}
+              }
+
+          });
+		
+		file.add(exiMenuItem);
+		settings.add(debugSettingItem);
+		menuBar.add(file);
+		menuBar.add(settings);
+		setJMenuBar(menuBar);
+		
+		
+		//create login window and various other panels
 		connectFlag = false;
 		primaryPanel = new JPanel();
 		name = new JLabel("");
@@ -133,13 +191,16 @@ public class MyBotApp extends JFrame implements Observer{		//can't extend JPanel
 							user_settings.add("" + loginWindow.getTwitchPort());
 							user_settings.add("" + loginWindow.getPointName());
 							saveFile(user_settings, "user_settings.txt");
-							if(connectFlag) {
-								theBot.disconnect();
-								theBot.dispose();
-								System.exit(0);
-							}
 
-						}	
+
+						}
+						if(connectFlag) {
+							theBot.disconnect();
+							theBot.dispose();
+							System.exit(0);
+						} else {
+							System.exit(0);
+						}
 					} 
 				}
 			} //windowClosing
@@ -241,17 +302,12 @@ public class MyBotApp extends JFrame implements Observer{		//can't extend JPanel
 		logout.addActionListener(new ActionListener() {
 		      public void actionPerformed(final ActionEvent the_event) {
 		    	  if (the_event.getSource() == logout) {
-		    		  //controller.setUserExists(false);
+		    		  theBot.disconnect();
 		    		  logout.setEnabled(false);
-		    		  primaryPanel.setVisible(true);
-		  			  loginWindow.setVisible(true);
-		  			  tabs.setVisible(false);
-		  			  name.setVisible(false);
-		  			loginWindow.clearLoginBox();
-		  			conferencesApp.setPreferredSize(new Dimension(500, 500));
-					primaryPanel.setPreferredSize(new Dimension(500, 500));
-					conferencesApp.pack();
-					setLocationRelativeTo(null);
+						loginWindow.isBtnEnabled(true);
+						loginWindow.setVisible(true);
+						theBot.wantDisconnect(true);
+						theBot.dispose();
 		    	  }
 		        }
 		      });
@@ -299,6 +355,7 @@ public class MyBotApp extends JFrame implements Observer{		//can't extend JPanel
 		
 	}
 	
+	
 	public void tryConnect(String[] myArgs) {
 		if(thebetaUsers.isEmpty()) {
 			  JOptionPane.showMessageDialog(null, "Unable to download beta user list to verify your authentication.... please try again later");
@@ -313,6 +370,16 @@ public class MyBotApp extends JFrame implements Observer{		//can't extend JPanel
 					theBot = thebotMain.getCreatedBot();
 					connectFlag = true;
 					gooduser = true;
+					if(theBot.isConnected()) {
+						loginWindow.isBtnEnabled(false);
+						loginWindow.setVisible(false);
+						logout.setEnabled(true);
+						theBot.wantDisconnect(false);
+						debugSettingItem.setEnabled(true);
+					} else {
+						loginWindow.isBtnEnabled(true);
+					}
+					
 				}
 			}
 			if(!gooduser) {

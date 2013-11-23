@@ -1,9 +1,10 @@
+package Model;
+import View.MyBotApp;
+
 /*
  * Authors: Daniel Henderson
  * Twitch Bot Application
  */
-
-package View;
 
 /**
  * This is the main driver of the program to initiate the GUI and create the Bot main.

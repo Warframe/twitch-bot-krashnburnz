@@ -71,6 +71,8 @@ public class MyBot extends PircBot implements Observer{
 	private int auctionHighBidAmount = 0;
 	
 	private String auctionHighBidder = "";
+	
+	private boolean wantingToDisconnect = false;
 
     public MyBot(String name, boolean lotteryEnabled, boolean accumulateOnStartUp, ArrayList<String> ops, String the_owner, String the_pointsname, int the_lotto_cost, 
     		int the_lottery_timer, String channel) {
@@ -488,7 +490,7 @@ public class MyBot extends PircBot implements Observer{
 		}
 		
 		if(arg0 instanceof MyConnected) {
-			if(!this.isConnected()) {
+			if(!this.isConnected() && !wantingToDisconnect) {
 				try {
 					this.reconnect();
 					try {
@@ -514,25 +516,34 @@ public class MyBot extends PircBot implements Observer{
 	
 	@Override
     protected synchronized void onDisconnect() {
-    	try {
-			this.reconnect();
-			try {
-				wait(10000);
-			} catch (InterruptedException e) {
-				// TODO Auto-generated catch block
+		if(wantingToDisconnect) {
+			//do nothing , we want to stay connected
+		} else { //random timeout, try reconnecting
+	    	try {
+				this.reconnect();
+				try {
+					wait(10000);
+				} catch (InterruptedException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+		        this.joinChannel(my_channel);
+			} catch (NickAlreadyInUseException e) {
+				e.printStackTrace();
+				System.out.println("Tried to reconnect, but Nick already in use!");
+			} catch (IOException e) {
+				e.printStackTrace();
+				System.out.println("Tried to reconnect, but The PircBot is already connected to an IRC server.  Disconnect first.");
+		       
+			} catch (IrcException e) {
+				System.out.println("Tried to reconnect, but could not log into the IRC server");
 				e.printStackTrace();
 			}
-	        this.joinChannel(my_channel);
-		} catch (NickAlreadyInUseException e) {
-			e.printStackTrace();
-			System.out.println("Tried to reconnect, but Nick already in use!");
-		} catch (IOException e) {
-			e.printStackTrace();
-			System.out.println("Tried to reconnect, but The PircBot is already connected to an IRC server.  Disconnect first.");
-	       
-		} catch (IrcException e) {
-			System.out.println("Tried to reconnect, but could not log into the IRC server");
-			e.printStackTrace();
 		}
+
+	}
+	
+	public void wantDisconnect(boolean answer) {
+		wantingToDisconnect = answer;
 	}
 }

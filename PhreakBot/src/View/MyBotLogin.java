@@ -394,4 +394,8 @@ public class MyBotLogin extends JPanel{
 		txtPointName.setText(the_text);
 	}
 	
+	public void isBtnEnabled(boolean answer) {
+		btnConnect.setEnabled(answer);
+	}
+
 } 

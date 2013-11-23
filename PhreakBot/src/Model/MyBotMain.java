@@ -24,7 +24,7 @@ public class MyBotMain {
 	private static final int LOTTERY_TIMER_MILLISEC = 1800000;
 	private static final boolean ACCUMULATE_POINTS_ON_STARTUP = true;
 	private static final String[] CHANNEL_OP1 = {"krashnburnz"};
-	private static final boolean enable_verbose_debug = true;
+	private static boolean enable_verbose_debug = true;
 	private MyBot bot;
 	
 	//Container to hold Channel Mods
@@ -73,6 +73,10 @@ public class MyBotMain {
     
     public MyBot getCreatedBot() {
     	return bot;
+    }
+    
+    public void isDebugOn(boolean answer) {
+    	enable_verbose_debug = answer;
     }
    
 }
