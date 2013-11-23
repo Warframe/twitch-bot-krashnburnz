@@ -78,7 +78,7 @@ public class FileDownloaderNEW extends JFrame {
         -1);
     } finally {
         if(exit = true){
-            System.exit(128);   
+            //System.exit(128);   
         }
 
     }

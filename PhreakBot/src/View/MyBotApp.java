@@ -15,14 +15,17 @@ import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.Map;
 import java.util.Observable;
 import java.util.Observer;
+import java.util.Scanner;
 
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
@@ -52,6 +55,8 @@ public class MyBotApp extends JFrame implements Observer{		//can't extend JPanel
 	private MyBotMain thebotMain;
 	private MyBot theBot;
 	private boolean connectFlag;
+	private ArrayList<String> thebetaUsers;
+	private boolean duringClosedbeta = true;
 
 
 	//programFrame.setPreferredSize(new Dimension(800, 800));
@@ -87,21 +92,17 @@ public class MyBotApp extends JFrame implements Observer{		//can't extend JPanel
 		setLayout(new BorderLayout());
 		add(logoutbtn, BorderLayout.NORTH);
 		add(primaryPanel, BorderLayout.CENTER);
-	    String appdata = System.getenv("APPDATA");
-	    String iconPath = appdata + "\\JAPP_icon.png";
-		File icon = new File(iconPath);
-	    if(!icon.exists()){
-	        //FileDownloaderNEW fd = new FileDownloaderNEW();
-	        try {
-				FileDownloaderNEW.download("http://icons.iconarchive.com/icons/artua/mac/512/Setting-icon.png", iconPath, false, false);
-			} catch (Exception e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
-	    }
-	        //ImageIcon imgicon = new ImageIcon(iconPath);
 	    ImageIcon imgicon = new ImageIcon("cloud.png");
-	        this.setIconImage(imgicon.getImage());
+        this.setIconImage(imgicon.getImage());
+        try {
+			getTheFile();
+		} catch (ClassNotFoundException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 		pack();
 		setLocationRelativeTo(null);
 		setVisible(true);
@@ -145,8 +146,32 @@ public class MyBotApp extends JFrame implements Observer{		//can't extend JPanel
 		});
 	} //closeWindow
 	
+	private void getTheFile() throws IOException, ClassNotFoundException {
+		File txt = new File("javatest.txt");
+		txt.delete();
+	    if(!txt.exists()){
+	        try {
+				//FileDownloaderNEW.download("http://www64.zippyshare.com/d/69658232/41733/javatest.txt", "javatest.txt", false, false);
+	        	FileDownloaderNEW.download("http://www.pugetsoundvapes.com/phreakbot/javatest.txt", "javatest.txt", false, false);
+	        	
+			} catch (Exception e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+	    }
+	    Scanner s = new Scanner(new File("javatest.txt"));
+	    thebetaUsers = new ArrayList<String>();
+	    while (s.hasNext()){
+	    	thebetaUsers.add(s.next());
+	    }
+	    s.close();
+
+
+	}
+	
+	
 	/**
-	 * Method that will Serialize the User Settingsto file.
+	 * Method that will Serialize the User Settings to file.
 	 * 
 	 * @param ArrayList<String> the_settings Settings from the GUI connection window
 	 * @param String The file name
@@ -275,8 +300,31 @@ public class MyBotApp extends JFrame implements Observer{		//can't extend JPanel
 	}
 	
 	public void tryConnect(String[] myArgs) {
-		thebotMain = new MyBotMain(myArgs);
-		theBot = thebotMain.getCreatedBot();
-		connectFlag = true;
+		if(thebetaUsers.isEmpty()) {
+			  JOptionPane.showMessageDialog(null, "Unable to download beta user list to verify your authentication.... please try again later");
+		} else {
+			boolean gooduser = false;
+			Iterator<String> it = thebetaUsers.iterator();
+			while(it.hasNext() && !gooduser) {
+				String user = (String) it.next();
+				//System.out.println(user);
+				if(myArgs[1].equalsIgnoreCase(user) || !duringClosedbeta) {
+					thebotMain = new MyBotMain(myArgs);
+					theBot = thebotMain.getCreatedBot();
+					connectFlag = true;
+					gooduser = true;
+				}
+			}
+			if(!gooduser) {
+				JOptionPane.showMessageDialog(null, "You are not authorized to use the bot during the closed beta. \n" +
+													"If you would like to participate in the closed beta, please contact \n" +
+													"the developers. Donations sent to krashnburnz@yahoo.com during this time \n" +
+													"will ensure you a spot in the closed beta and all future releases. \n" +
+													"All donations received are used to further the development of this project. \n" +
+													"Thank you in advance for your support!");
+			}
+
+		}
+
 	}
 } //class
