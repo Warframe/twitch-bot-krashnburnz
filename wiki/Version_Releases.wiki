@@ -1,0 +1,20 @@
+#summary This page contains all the releases for PhreakBot.
+
+= Changelog =
+
+*Version 16 (bot version 016)*: Implemented a console to be used for information, errors messages, and IRC chat. More information--> https://code.google.com/p/twitch-bot-krashnburnz/source/detail?r=16
+
+
+*Version 15 (bot version 002):* 
+- Implemented connect, log out features to control when the bot is online, and when the bot is offline.
+More Information--> https://code.google.com/p/twitch-bot-krashnburnz/source/detail?r=15
+
+= PhreakBot Beta Downloads =
+Version 016: 
+
+Version 002: http://pugetsoundvapes.com/phreakbot/download/beta/Phreak_Bot_ver_002.zip
+
+Add your content here.  Format your content with:
+  * Text in *bold* or _italic_
+  * Headings, paragraphs, and lists
+  * Automatic links to other wiki pages
