@@ -16,18 +16,19 @@ import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.Iterator;
-import java.util.Map;
 import java.util.Observable;
 import java.util.Observer;
 import java.util.Scanner;
 
+import javax.swing.Icon;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JCheckBoxMenuItem;
@@ -38,12 +39,10 @@ import javax.swing.JMenuBar;
 import javax.swing.JMenuItem;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
-import javax.swing.JRadioButtonMenuItem;
 import javax.swing.KeyStroke;
 
 import Model.MyBot;
 import Model.MyBotMain;
-import Model.User;
 
 /**
  * This class represents the panel after login that every tab sits on
@@ -54,6 +53,10 @@ import Model.User;
 public class MyBotApp extends JFrame implements Observer{		//can't extend JPanel if extending Observable for logout btn
 
 	private static final long serialVersionUID = 9057758619093026546L;
+	private Icon loadImage;
+	private JLabel imageLabel;
+	private JPanel consolePanel;
+	private Console console;
 	private TabPanel tabs;
 	private MyBotLogin loginWindow;
 	private JButton logout;
@@ -75,9 +78,11 @@ public class MyBotApp extends JFrame implements Observer{		//can't extend JPanel
 	 * 
 	 * @param control is the controller in the model that handles all queries.
 	 * @param programFrame 
+	 * @throws MalformedURLException 
 	 */
 	public MyBotApp() {
 		//create menu bar for window
+		console = new Console();
 		JMenuBar menuBar = new JMenuBar();;
 		JMenu file = new JMenu("File");
 		JMenu settings = new JMenu("Settings");
@@ -92,8 +97,8 @@ public class MyBotApp extends JFrame implements Observer{		//can't extend JPanel
 		JMenuItem exiMenuItem = new JMenuItem("Exit",
                 KeyEvent.VK_T);
 		debugSettingItem = new JCheckBoxMenuItem("Debug ON");
-		debugSettingItem.setEnabled(false);
-		debugSettingItem.setState(false);
+		debugSettingItem.setEnabled(true);
+		debugSettingItem.setState(true);
 		debugSettingItem.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent event) {
                 if (debugSettingItem.isSelected()) {
@@ -108,13 +113,7 @@ public class MyBotApp extends JFrame implements Observer{		//can't extend JPanel
 		exiMenuItem.getAccessibleContext().setAccessibleDescription("This doesn't really do anything");
 		exiMenuItem.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent event) {
-        		if(connectFlag) {
-        			theBot.disconnect();
-        			theBot.dispose();
-        			System.exit(0);
-        		} else {
-        			System.exit(0);
-        		}
+            	shutDownAndSave();
               }
 
           });
@@ -135,18 +134,32 @@ public class MyBotApp extends JFrame implements Observer{		//can't extend JPanel
 		logout.setEnabled(false);
 		Container loginScreen = wrapComponents();
 		Container logoutbtn = btnLayout();
-		//containers.setPreferredSize(new Dimension(250, 250));
 		
+		//create panels for console
+		consolePanel = console.getPanel();
+		consolePanel.setVisible(false);
+
+		//create load screen image for logging in
+		try {
+			loadImage = new ImageIcon(new URL("http://quicktake.morningstar.com/index/images/LoadingScreenAnimation.gif"));
+		} catch (MalformedURLException e1) {
+			System.out.println("Unable to load Loading image..");
+			e1.printStackTrace();
+		}
+		imageLabel = new JLabel(loadImage);
+		imageLabel.setVisible(false);
 		//try to load user settings if exists
 		loadFile();
+
 		primaryPanel.add(loginScreen);
+		primaryPanel.add(consolePanel);
 		primaryPanel.setPreferredSize(new Dimension(500, 500));
 		primaryPanel.setVisible(true);
 		
 		setTitle("Stream Phreak Bot");
 		setDefaultCloseOperation(JFrame.DO_NOTHING_ON_CLOSE);
 		saveOnClosingWindow();
-		setPreferredSize(new Dimension(500, 500));
+		setPreferredSize(new Dimension(500, 520));
 		setLayout(new BorderLayout());
 		add(logoutbtn, BorderLayout.NORTH);
 		add(primaryPanel, BorderLayout.CENTER);
@@ -174,34 +187,7 @@ public class MyBotApp extends JFrame implements Observer{		//can't extend JPanel
 			@Override
 			public void windowClosing(WindowEvent e) {
 				if (e.getSource() == MyBotApp.this) {
-					int result = JOptionPane.showConfirmDialog(null, 
-							"Are you sure you want to quit the program?", 
-							"Exit Program", 
-							JOptionPane.YES_NO_OPTION);				
-					if (result == JOptionPane.OK_OPTION) {
-						//controller.saveData();
-						MyBotApp.this.dispose();
-						if(loginWindow.getSaveCreds()) { //if save credentials is clicked, save data to file
-							ArrayList<String> user_settings = new ArrayList<String>();
-							//this will not check for empty boxes, concatenate with an empty string the contents
-							user_settings.add("" + loginWindow.getChannelName());
-							user_settings.add("" + loginWindow.getBotName());
-							user_settings.add("" + loginWindow.getBotPassword());
-							user_settings.add("" + loginWindow.getTwitchIp());
-							user_settings.add("" + loginWindow.getTwitchPort());
-							user_settings.add("" + loginWindow.getPointName());
-							saveFile(user_settings, "user_settings.txt");
-
-
-						}
-						if(connectFlag) {
-							theBot.disconnect();
-							theBot.dispose();
-							System.exit(0);
-						} else {
-							System.exit(0);
-						}
-					} 
+					shutDownAndSave();
 				}
 			} //windowClosing
 		});
@@ -294,7 +280,7 @@ public class MyBotApp extends JFrame implements Observer{		//can't extend JPanel
 	 * Sets up logout button.
 	 * 
 	 * @return the logout button.
-	 * @author Ching-Ting Huang
+	 * @author Daniel Henderson, Ching-Ting Huang
 	 * @param conferencesApp 
 	 */
 	private JButton logoutBtn(final MyBotApp conferencesApp) {
@@ -304,7 +290,9 @@ public class MyBotApp extends JFrame implements Observer{		//can't extend JPanel
 		    	  if (the_event.getSource() == logout) {
 		    		  theBot.disconnect();
 		    		  logout.setEnabled(false);
+		    			debugSettingItem.setEnabled(true);
 						loginWindow.isBtnEnabled(true);
+						consolePanel.setVisible(false);
 						loginWindow.setVisible(true);
 						theBot.wantDisconnect(true);
 						theBot.dispose();
@@ -355,6 +343,36 @@ public class MyBotApp extends JFrame implements Observer{		//can't extend JPanel
 		
 	}
 	
+	private void shutDownAndSave() {
+
+		int result = JOptionPane.showConfirmDialog(null, 
+				"Are you sure you want to quit the program?", 
+				"Exit Program", 
+				JOptionPane.YES_NO_OPTION);				
+		if (result == JOptionPane.OK_OPTION) {
+			//controller.saveData();
+			MyBotApp.this.dispose();
+			if(loginWindow.getSaveCreds()) { //if save credentials is clicked, save data to file
+				ArrayList<String> user_settings = new ArrayList<String>();
+				//this will not check for empty boxes, concatenate with an empty string the contents
+				user_settings.add("" + loginWindow.getChannelName());
+				user_settings.add("" + loginWindow.getBotName());
+				user_settings.add("" + loginWindow.getBotPassword());
+				user_settings.add("" + loginWindow.getTwitchIp());
+				user_settings.add("" + loginWindow.getTwitchPort());
+				user_settings.add("" + loginWindow.getPointName());
+				saveFile(user_settings, "user_settings.txt");
+			}
+			if(connectFlag) {
+				theBot.disconnect();
+				theBot.dispose();
+				System.exit(0);
+			} else {
+				System.exit(0);
+			}
+		}
+	}
+	
 	
 	public void tryConnect(String[] myArgs) {
 		if(thebetaUsers.isEmpty()) {
@@ -371,8 +389,10 @@ public class MyBotApp extends JFrame implements Observer{		//can't extend JPanel
 					connectFlag = true;
 					gooduser = true;
 					if(theBot.isConnected()) {
+						debugSettingItem.setEnabled(false);
 						loginWindow.isBtnEnabled(false);
 						loginWindow.setVisible(false);
+						consolePanel.setVisible(true);
 						logout.setEnabled(true);
 						theBot.wantDisconnect(false);
 						debugSettingItem.setEnabled(true);
