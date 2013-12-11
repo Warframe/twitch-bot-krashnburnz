@@ -2,6 +2,15 @@
 
 = Changelog =
 
+*Version 20 (bot version 016)*: - Implemented some major improvements on the login screen
+  + Created an animated login button so the user knows its trying to connect
+  + Text Fields disable while trying to login
+  + Implemented threads for the connection method so the program does not freeze while trying to connect
+  + Created Help and Support menus 
+  + Connection console was added to supply errors if incorrect 
+  + Overhaul on the Documentation for the bot was done, including a in depth section about the Oauthkey for twitch
+information was given. More information--> https://code.google.com/p/twitch-bot-krashnburnz/source/detail?r=20
+
 *Version 16 (bot version 016)*: Implemented a console to be used for information, errors messages, and IRC chat. More information--> https://code.google.com/p/twitch-bot-krashnburnz/source/detail?r=16
 
 ----
@@ -13,6 +22,9 @@ More Information--> https://code.google.com/p/twitch-bot-krashnburnz/source/deta
 ----
 
 = PhreakBot Beta Downloads =
+Version 020 (released 12/10/2013): 
+http://pugetsoundvapes.com/phreakbot/download/beta/PhreakBot_ver_020.zip
+
 Version 016 (released 12/7/2013): http://pugetsoundvapes.com/phreakbot/download/beta/PhreakBot_ver_016.zip
 
 Version 002 (released 12/1/2013): http://pugetsoundvapes.com/phreakbot/download/beta/Phreak_Bot_ver_002.zip
