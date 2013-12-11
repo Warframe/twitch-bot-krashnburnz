@@ -2,7 +2,7 @@
 
 = Changelog =
 
-*Version 20 (bot revision 026)*: - Implemented some major improvements on the login screen
+*Version 20 (bot revision 020)*: - Implemented some major improvements on the login screen
   + Created an animated login button so the user knows its trying to connect
   + Text Fields disable while trying to login
   + Implemented threads for the connection method so the program does not freeze while trying to connect
