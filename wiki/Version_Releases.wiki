@@ -8,7 +8,7 @@
   + Implemented threads for the connection method so the program does not freeze while trying to connect
   + Created Help and Support menus 
   + Connection console was added to supply errors if incorrect 
-  + Overhaul on the Documentation for the bot was done, including a in depth section about the Oauthkey for twitch
+  + Overhaul on the Documentation for the bot was done, including an in depth section about the Oauthkey for twitch
 information was given. More information--> https://code.google.com/p/twitch-bot-krashnburnz/source/detail?r=20
 
 ----
