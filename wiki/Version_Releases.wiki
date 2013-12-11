@@ -11,6 +11,8 @@
   + Overhaul on the Documentation for the bot was done, including a in depth section about the Oauthkey for twitch
 information was given. More information--> https://code.google.com/p/twitch-bot-krashnburnz/source/detail?r=20
 
+----
+
 *Version 16 (bot revision 016)*: Implemented a console to be used for information, errors messages, and IRC chat. More information--> https://code.google.com/p/twitch-bot-krashnburnz/source/detail?r=16
 
 ----
