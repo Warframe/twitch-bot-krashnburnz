@@ -7,8 +7,10 @@ package View;
 
 import java.awt.BorderLayout;
 import java.awt.Container;
+import java.awt.Desktop;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
+import java.awt.Frame;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
@@ -21,6 +23,8 @@ import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.net.MalformedURLException;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -50,7 +54,7 @@ import Model.MyBotMain;
  * @author Daniel Henderson
  * @version 0.1
  */
-public class MyBotApp extends JFrame implements Observer{		//can't extend JPanel if extending Observable for logout btn
+public class MyBotApp extends JFrame implements Observer, Runnable{		//can't extend JPanel if extending Observable for logout btn
 
 	private static final long serialVersionUID = 9057758619093026546L;
 	private Icon loadImage;
@@ -66,8 +70,11 @@ public class MyBotApp extends JFrame implements Observer{		//can't extend JPanel
 	private MyBot theBot;
 	private boolean connectFlag;
 	private ArrayList<String> thebetaUsers;
+	private String [] theUsersToCheck;
 	private boolean duringClosedbeta = true;
 	private final JCheckBoxMenuItem debugSettingItem;
+	private Frame tempFrame = new JFrame();
+	private Thread threadBtn;
 
 
 	//programFrame.setPreferredSize(new Dimension(800, 800));
@@ -82,20 +89,60 @@ public class MyBotApp extends JFrame implements Observer{		//can't extend JPanel
 	 */
 	public MyBotApp() {
 		//create menu bar for window
+		tempFrame = new JFrame("Connection Console");
+		tempFrame.addWindowListener(new java.awt.event.WindowAdapter() {
+		    @SuppressWarnings("deprecation")
+			@Override
+		    public void windowClosing(java.awt.event.WindowEvent windowEvent) {
+		    	if(threadBtn.isAlive() ) {
+		    		threadBtn.stop();
+		    	}
+		    	if(theBot != null) {
+					theBot.disconnect();
+					theBot.dispose();	
+		    	}
+	    		  logout.setEnabled(false);
+	    		  loginWindow.setConnectBtnName("Connect");
+	    			debugSettingItem.setEnabled(true);
+					loginWindow.isConnectBtnEnabled(true);
+					loginWindow.isBotNametextEnabled(true);
+					loginWindow.isOathtextEnabled(true);
+					loginWindow.isChanneltextEnabled(true);
+					loginWindow.isIPtextEnabled(true);
+					loginWindow.isPorttextEnabled(true);
+					loginWindow.isPointstextEnabled(true);
+					loginWindow.isCredsCheckEnabled(true);
+		    }
+		});
 		console = new Console();
 		JMenuBar menuBar = new JMenuBar();;
 		JMenu file = new JMenu("File");
 		JMenu settings = new JMenu("Settings");
+		JMenu helpMenu = new JMenu("Help");
+		JMenu supportMenu = new JMenu("Support");
 		settings.setMnemonic(KeyEvent.VK_S);
 		settings.getAccessibleContext().setAccessibleDescription(
 		        "General Bot Settings");
 		file.setMnemonic(KeyEvent.VK_F);
 		file.getAccessibleContext().setAccessibleDescription(
 		        "File Settings");
+		helpMenu.setMnemonic(KeyEvent.VK_H);
+		helpMenu.getAccessibleContext().setAccessibleDescription(
+		        "Help");
+		supportMenu.setMnemonic(KeyEvent.VK_U);
+		supportMenu.getAccessibleContext().setAccessibleDescription(
+		        "Support Project");
 
-		
 		JMenuItem exiMenuItem = new JMenuItem("Exit",
-                KeyEvent.VK_T);
+                KeyEvent.VK_E);
+		JMenuItem DocumentMenuItem = new JMenuItem("Documentation",
+                KeyEvent.VK_D);
+		JMenuItem AboutMenuItem = new JMenuItem("About",
+                KeyEvent.VK_A);
+		JMenuItem DevMenuItem = new JMenuItem("Help Develop",
+                KeyEvent.VK_V);
+		JMenuItem DonateMenuItem = new JMenuItem("Donate",
+                KeyEvent.VK_O);
 		debugSettingItem = new JCheckBoxMenuItem("Debug ON");
 		debugSettingItem.setEnabled(true);
 		debugSettingItem.setState(true);
@@ -110,7 +157,7 @@ public class MyBotApp extends JFrame implements Observer{		//can't extend JPanel
 
           });
 		exiMenuItem.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_1, ActionEvent.ALT_MASK));
-		exiMenuItem.getAccessibleContext().setAccessibleDescription("This doesn't really do anything");
+		exiMenuItem.getAccessibleContext().setAccessibleDescription("Exit the program...");
 		exiMenuItem.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent event) {
             	shutDownAndSave();
@@ -118,10 +165,58 @@ public class MyBotApp extends JFrame implements Observer{		//can't extend JPanel
 
           });
 		
+		DocumentMenuItem.addActionListener(new ActionListener() {
+		      public void actionPerformed(final ActionEvent the_event) {
+		    	  try {
+					openWebpage(new URL("http://pugetsoundvapes.com/phreakbot/document/Phreak_Bot_About_Help.pdf"));
+				} catch (MalformedURLException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+		        }
+		      });
+		
+		DonateMenuItem.addActionListener(new ActionListener() {
+		      public void actionPerformed(final ActionEvent the_event) {
+		    	  try {
+					openWebpage(new URL("https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=AZ7PBS9ZSQLQA"));
+				} catch (MalformedURLException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+		        }
+		      });
+		
+		AboutMenuItem.addActionListener(new ActionListener() {
+		      public void actionPerformed(final ActionEvent the_event) {
+		  		JOptionPane.showMessageDialog(null, "Phreak Bot© was created by Daniel Henderson 2012\n" +
+						"krashnburnz@yahoo.com \n" +
+						"Please visit the project's home page for more information. \n" +
+						"https://code.google.com/p/twitch-bot-krashnburnz/\n" +
+						"This bot also use the PircBot Api created by Paul James Mutton");
+		        }
+		      });
+		DevMenuItem.addActionListener(new ActionListener() {
+		      public void actionPerformed(final ActionEvent the_event) {
+		  		JOptionPane.showMessageDialog(null, "If you would like to contribute your time into improving \n" +
+						"this project, please send the head developer an email and/or visit \n" +
+						"the project's homepage at the URL listed below. \n" +
+						"Head Developer's Email: krashnburnz@yahoo.com \n" +
+						"Project Website: https://code.google.com/p/twitch-bot-krashnburnz/");
+		        }
+		      });
+
+		
 		file.add(exiMenuItem);
 		settings.add(debugSettingItem);
+		helpMenu.add(DocumentMenuItem);
+		helpMenu.add(AboutMenuItem);
+		supportMenu.add(DevMenuItem);
+		supportMenu.add(DonateMenuItem);
 		menuBar.add(file);
 		menuBar.add(settings);
+		menuBar.add(helpMenu);
+		menuBar.add(supportMenu);
 		setJMenuBar(menuBar);
 		
 		
@@ -130,6 +225,8 @@ public class MyBotApp extends JFrame implements Observer{		//can't extend JPanel
 		primaryPanel = new JPanel();
 		name = new JLabel("");
 		loginWindow = new MyBotLogin(this);
+		Thread loginThread = new Thread(loginWindow);
+		loginThread.start();
 		logout = logoutBtn(this);
 		logout.setEnabled(false);
 		Container loginScreen = wrapComponents();
@@ -137,7 +234,7 @@ public class MyBotApp extends JFrame implements Observer{		//can't extend JPanel
 		
 		//create panels for console
 		consolePanel = console.getPanel();
-		consolePanel.setVisible(false);
+		consolePanel.setVisible(true);
 
 		//create load screen image for logging in
 		try {
@@ -152,7 +249,8 @@ public class MyBotApp extends JFrame implements Observer{		//can't extend JPanel
 		loadFile();
 
 		primaryPanel.add(loginScreen);
-		primaryPanel.add(consolePanel);
+		
+		//Create tempt frame for console while trying to connect
 		primaryPanel.setPreferredSize(new Dimension(500, 500));
 		primaryPanel.setVisible(true);
 		
@@ -178,6 +276,10 @@ public class MyBotApp extends JFrame implements Observer{		//can't extend JPanel
 		setLocationRelativeTo(null);
 		setVisible(true);
 	} //MainPanel
+	
+	private static void setup() {
+		
+	}
 
 	/**
 	 * Save all information before closing the window and the program.
@@ -192,6 +294,25 @@ public class MyBotApp extends JFrame implements Observer{		//can't extend JPanel
 			} //windowClosing
 		});
 	} //closeWindow
+	
+	public static void openWebpage(URL url) {
+	    try {
+	        openWebpage(url.toURI());
+	    } catch (URISyntaxException e) {
+	        e.printStackTrace();
+	    }
+	}
+	
+	public static void openWebpage(URI uri) {
+	    Desktop desktop = Desktop.isDesktopSupported() ? Desktop.getDesktop() : null;
+	    if (desktop != null && desktop.isSupported(Desktop.Action.BROWSE)) {
+	        try {
+	            desktop.browse(uri);
+	        } catch (Exception e) {
+	            e.printStackTrace();
+	        }
+	    }
+	}
 	
 	private void getTheFile() throws IOException, ClassNotFoundException {
 		File txt = new File("javatest.txt");
@@ -284,18 +405,35 @@ public class MyBotApp extends JFrame implements Observer{		//can't extend JPanel
 	 * @param conferencesApp 
 	 */
 	private JButton logoutBtn(final MyBotApp conferencesApp) {
-		final JButton logout = new JButton("Logout");
+		final JButton logout = new JButton("Disconnect");
 		logout.addActionListener(new ActionListener() {
 		      public void actionPerformed(final ActionEvent the_event) {
 		    	  if (the_event.getSource() == logout) {
-		    		  theBot.disconnect();
+		    		  if(theBot.isConnected()) {
+			    		  theBot.disconnect();
+		    		  }
 		    		  logout.setEnabled(false);
+						primaryPanel.remove(consolePanel);
+						primaryPanel.setVisible(false);
+						tempFrame.setPreferredSize(new Dimension(400, 400));
+						tempFrame.add(consolePanel);
+						tempFrame.pack();
+						tempFrame.setVisible(true);
+		    		  loginWindow.setConnectBtnName("Connect");
 		    			debugSettingItem.setEnabled(true);
-						loginWindow.isBtnEnabled(true);
-						consolePanel.setVisible(false);
+						loginWindow.isConnectBtnEnabled(true);
 						loginWindow.setVisible(true);
+						primaryPanel.setVisible(true);
 						theBot.wantDisconnect(true);
 						theBot.dispose();
+						loginWindow.isBotNametextEnabled(true);
+						loginWindow.isOathtextEnabled(true);
+						loginWindow.isChanneltextEnabled(true);
+						loginWindow.isIPtextEnabled(true);
+						loginWindow.isPorttextEnabled(true);
+						loginWindow.isPointstextEnabled(true);
+						loginWindow.isCredsCheckEnabled(true);
+						//consolePanel.setVisible(false);
 		    	  }
 		        }
 		      });
@@ -374,10 +512,28 @@ public class MyBotApp extends JFrame implements Observer{		//can't extend JPanel
 	}
 	
 	
+	@SuppressWarnings("deprecation")
 	public void tryConnect(String[] myArgs) {
 		if(thebetaUsers.isEmpty()) {
 			  JOptionPane.showMessageDialog(null, "Unable to download beta user list to verify your authentication.... please try again later");
 		} else {
+			loginWindow.isConnectBtnEnabled(false);
+			tempFrame.setPreferredSize(new Dimension(400, 400));
+			tempFrame.add(consolePanel);
+			tempFrame.pack();
+			tempFrame.setLocationRelativeTo(this);
+			tempFrame.setVisible(true);
+			//primaryPanel.add(consolePanel);
+			AnimateConnect animatebtn = new AnimateConnect(loginWindow);
+			threadBtn = new Thread(animatebtn);
+			threadBtn.start();
+			loginWindow.isBotNametextEnabled(false);
+			loginWindow.isOathtextEnabled(false);
+			loginWindow.isChanneltextEnabled(false);
+			loginWindow.isIPtextEnabled(false);
+			loginWindow.isPorttextEnabled(false);
+			loginWindow.isPointstextEnabled(false);
+			loginWindow.isCredsCheckEnabled(false);
 			boolean gooduser = false;
 			Iterator<String> it = thebetaUsers.iterator();
 			while(it.hasNext() && !gooduser) {
@@ -389,29 +545,53 @@ public class MyBotApp extends JFrame implements Observer{		//can't extend JPanel
 					connectFlag = true;
 					gooduser = true;
 					if(theBot.isConnected()) {
+						tempFrame.remove(consolePanel);
+						tempFrame.setVisible(false);
+						primaryPanel.add(consolePanel);
 						debugSettingItem.setEnabled(false);
-						loginWindow.isBtnEnabled(false);
+						loginWindow.isConnectBtnEnabled(false);
 						loginWindow.setVisible(false);
 						consolePanel.setVisible(true);
 						logout.setEnabled(true);
 						theBot.wantDisconnect(false);
 						debugSettingItem.setEnabled(true);
-					} else {
-						loginWindow.isBtnEnabled(true);
-					}
-					
+						threadBtn.stop();
+					}		
 				}
 			}
 			if(!gooduser) {
+				threadBtn.stop();				
+				loginWindow.setConnectBtnName("Connect");
+				loginWindow.isConnectBtnEnabled(true);
 				JOptionPane.showMessageDialog(null, "You are not authorized to use the bot during the closed beta. \n" +
 													"If you would like to participate in the closed beta, please contact \n" +
 													"the developers. Donations sent to krashnburnz@yahoo.com during this time \n" +
 													"will ensure you a spot in the closed beta and all future releases. \n" +
 													"All donations received are used to further the development of this project. \n" +
 													"Thank you in advance for your support!");
+
+				loginWindow.isBotNametextEnabled(true);
+				loginWindow.isOathtextEnabled(true);
+				loginWindow.isChanneltextEnabled(true);
+				loginWindow.isIPtextEnabled(true);
+				loginWindow.isPorttextEnabled(true);
+				loginWindow.isPointstextEnabled(true);
+				loginWindow.isCredsCheckEnabled(true);
+
 			}
 
 		}
+
+	}
+
+	@Override
+	public void run() {
+		tryConnect(theUsersToCheck);
+		
+	}
+	
+	public void setStringOfUsers(String[] myArgs) {
+		theUsersToCheck = myArgs;
 
 	}
 } //class

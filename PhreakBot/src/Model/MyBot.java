@@ -96,7 +96,6 @@ public class MyBot extends PircBot implements Observer{
     	pointAdder_t.start();
         checkIfStreamingByDefualt(accumulateOnStartUp);
         
-        
     	my_keywordEntrys = new MyKeywordEntry();
     	Thread KeywordEntrys_t = new Thread(my_keywordEntrys);
     	my_keywordEntrys.addObserver(this);

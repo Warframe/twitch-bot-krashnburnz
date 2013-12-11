@@ -49,7 +49,8 @@ public class Console extends WindowAdapter implements WindowListener, ActionList
 		try
 		{
 			PipedOutputStream pout=new PipedOutputStream(this.pin);
-			System.setOut(new PrintStream(pout,true)); 
+			System.setOut(new PrintStream(pout,true));
+
 		} 
 		catch (java.io.IOException io)
 		{
@@ -123,6 +124,16 @@ public class Console extends WindowAdapter implements WindowListener, ActionList
 				if (pin.available()!=0)
 				{
 					String input=this.readLine(pin);
+					if(input.toLowerCase().contains("login unsuccessful")) {
+						textArea.append("  ****WARNING**** YOUR BOT'S NAME OR OATHKEY MAY BE INCORRECT.   ");
+						textArea.append("  PLEASE VERIFY THIS INFORMATION IS CORRECT!   ");
+						textArea.setCaretPosition(textArea.getDocument().getLength());
+					}
+					else if(input.toLowerCase().contains("connection timed out")) {
+						textArea.append("  ****WARNING**** THE IP ADDRESS OR PORT MAY BE INCORRECT OR YOU MAY NOT BE CONNECTED TO THE INTERNET.   ");
+						textArea.append("  PLEASE VERIFY THIS INFORMATION IS CORRECT!   ");
+						textArea.setCaretPosition(textArea.getDocument().getLength());
+					}
 					textArea.append(input);
 					textArea.setCaretPosition(textArea.getDocument().getLength());
 				}
@@ -135,6 +146,16 @@ public class Console extends WindowAdapter implements WindowListener, ActionList
 				if (pin2.available()!=0)
 				{
 					String input=this.readLine(pin2);
+					if(input.toLowerCase().contains("login unsuccessful")) {
+						textArea.append("****WARNING**** YOUR BOT'S NAME OR OATHKEY MAY BE INCORRECT.   ");
+						textArea.append("PLEASE VERIFY THIS INFORMATION IS CORRECT!   ");
+						textArea.setCaretPosition(textArea.getDocument().getLength());
+					}
+					else if(input.toLowerCase().contains("connection timed out")) {
+						textArea.append("  ****WARNING**** THE IP ADDRESS OR PORT MAY BE INCORRECT OR YOU MAY NOT BE CONNECTED TO THE INTERNET.   ");
+						textArea.append("  PLEASE VERIFY THIS INFORMATION IS CORRECT!   ");
+						textArea.setCaretPosition(textArea.getDocument().getLength());
+					}
 					textArea.append(input);
 					textArea.setCaretPosition(textArea.getDocument().getLength());
 				}

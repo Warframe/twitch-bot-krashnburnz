@@ -25,7 +25,6 @@ public class MyFollowers  extends ArrayList<String>{
        	   while(scanner.hasNext()) {
        		the_follower = scanner.next();
        		add(the_follower);
-       		System.out.println("Added " + the_follower + " to the array list. User number: " + my_count);
        		my_count++;
        	   }
        	   System.out.println("All followers loaded successfull.");

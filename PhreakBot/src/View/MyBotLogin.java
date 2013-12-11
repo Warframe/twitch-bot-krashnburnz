@@ -37,7 +37,7 @@ import javax.swing.JTextField;
 import Model.MyBotMain;
 import Model.User;
 
-public class MyBotLogin extends JPanel{
+public class MyBotLogin extends JPanel implements Runnable{
 	/**
 	 *@author Daniel Henderson
 	 * Login class, used to setup the login window and registration to
@@ -93,7 +93,6 @@ public class MyBotLogin extends JPanel{
 	public MyBotLogin(MyBotApp myBotApp) {
 		this.setLayout(new FlowLayout());
 		mainBotApp = myBotApp;
-		setup();
 	} //Login
 	
 	/**
@@ -158,9 +157,10 @@ public class MyBotLogin extends JPanel{
 		
 		//call method to create button and listeners
 		setupBtns();
-		this.add(btnConnect);
+
 		this.add(btnDonate);
 		this.add(btnOathKey);
+		this.add(btnConnect);
 	}
 	
 	public static void openWebpage(URL url) {
@@ -187,7 +187,7 @@ public class MyBotLogin extends JPanel{
 	 * via inner classes for each button.
 	 */
 	private void setupBtns() {
-		btnOathKey = new JButton("Find OathKey");
+		btnOathKey = new JButton("OathKey");
 		btnConnect = new JButton("Connect");
 		btnDonate = new JButton("Donate");
 	  	btnRegisterNow = new JButton("Register");
@@ -207,7 +207,7 @@ public class MyBotLogin extends JPanel{
 		    	  } else if(channelName.isEmpty()) {
 		    		  JOptionPane.showMessageDialog(null, "Required information missing! Please type a channel name."); 
 		    	  } else if(botPassword.isEmpty()) {
-		    		  JOptionPane.showMessageDialog(null, "Required information missing! Please type a password."); 
+		    		  JOptionPane.showMessageDialog(null, "Required information missing! Please input your Bot's Twitch Oathkey."); 
 		    	  } else if(twitchIp.isEmpty()) {
 		    		  JOptionPane.showMessageDialog(null, "Required information missing! Please type an IP adress for Twitch."); 
 		    	  } else if(twitchPort.isEmpty()) {
@@ -222,7 +222,11 @@ public class MyBotLogin extends JPanel{
 		    		  myArgs[3] = twitchIp;
 		    		  myArgs[4] = twitchPort;
 		    		  myArgs[5] = pointName;
-		    		  mainBotApp.tryConnect(myArgs);
+		    		  setConnectBtnName("Connecting...");
+		    		  isConnectBtnEnabled(false);
+		    		  mainBotApp.setStringOfUsers(myArgs);
+		    		  Thread connectThread = new Thread(mainBotApp);
+		    		  connectThread.start();
 		    	  }
 		      }
 		});
@@ -394,8 +398,40 @@ public class MyBotLogin extends JPanel{
 		txtPointName.setText(the_text);
 	}
 	
-	public void isBtnEnabled(boolean answer) {
+	public synchronized void isConnectBtnEnabled(boolean answer) {
 		btnConnect.setEnabled(answer);
+	}
+	
+	public synchronized void setConnectBtnName(String the_text) {
+		btnConnect.setText(the_text);
+	}
+
+	@Override
+	public void run() {
+		setup();
+		
+	}
+	
+	public void isBotNametextEnabled(boolean answer) {
+		txtBotname.setEnabled(answer);
+	}
+	public void isOathtextEnabled(boolean answer) {
+		txtPassword.setEnabled(answer);
+	}
+	public void isChanneltextEnabled(boolean answer) {
+		txtChannelName.setEnabled(answer);
+	}
+	public void isIPtextEnabled(boolean answer) {
+		txtTwitchIP.setEnabled(answer);
+	}
+	public void isPorttextEnabled(boolean answer) {
+		txtTwitchPort.setEnabled(answer);
+	}
+	public void isPointstextEnabled(boolean answer) {
+		txtPointName.setEnabled(answer);
+	}
+	public void isCredsCheckEnabled(boolean answer) {
+		cboxCredsSave.setEnabled(answer);
 	}
 
 } 
