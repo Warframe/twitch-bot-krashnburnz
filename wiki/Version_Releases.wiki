@@ -2,7 +2,7 @@
 
 = Changelog =
 
-*Version 20 (bot version 016)*: - Implemented some major improvements on the login screen
+*Version 20 (bot revision 026)*: - Implemented some major improvements on the login screen
   + Created an animated login button so the user knows its trying to connect
   + Text Fields disable while trying to login
   + Implemented threads for the connection method so the program does not freeze while trying to connect
@@ -11,11 +11,11 @@
   + Overhaul on the Documentation for the bot was done, including a in depth section about the Oauthkey for twitch
 information was given. More information--> https://code.google.com/p/twitch-bot-krashnburnz/source/detail?r=20
 
-*Version 16 (bot version 016)*: Implemented a console to be used for information, errors messages, and IRC chat. More information--> https://code.google.com/p/twitch-bot-krashnburnz/source/detail?r=16
+*Version 16 (bot revision 016)*: Implemented a console to be used for information, errors messages, and IRC chat. More information--> https://code.google.com/p/twitch-bot-krashnburnz/source/detail?r=16
 
 ----
 
-*Version 15 (bot version 002):* 
+*Version 15 (bot revision 002):* 
 Implemented connect, log out features to control when the bot is online, and when the bot is offline. Fixed error withg the program not fully closing if the save creds was not clicked. Added menu items to enable debug and to exit the program
 More Information--> https://code.google.com/p/twitch-bot-krashnburnz/source/detail?r=15
 
