@@ -31,7 +31,6 @@ public class TabPanel extends JTabbedPane {
 	public TabPanel() {
 
 		final List<JPanel> panels = createTabs();
-		visibility(panels);
 	} //PanelMain
 	
 	/**

@@ -472,19 +472,22 @@ public class MyBot extends PircBot implements Observer{
 		}
 		
 		if(arg0 instanceof MyLotteryAdvert) {
+			int amount = lottoPeople.size() * my_lottery_cost;
 			lotto_time_counter += (my_lottery_timer / 5);
-            sendMessage(my_channel, "Lottery is currently active. To purchase a ticket for " + my_lottery_cost + " points, type !buyticket. The lottery will end in " + ((my_lottery_timer - lotto_time_counter) / 60000) + " minutes.");
+            sendMessage(my_channel, "Lottery is currently active with a total of " + amount + " points in the pool. To purchase a ticket for " + my_lottery_cost + " points, type !buyticket. The lottery will end in " + ((my_lottery_timer - lotto_time_counter) / 60000) + " minutes.");
 		}
 		
 		if(arg0 instanceof MyLotteryWinner) {
 			String winner = my_lottoWinner.getWinner();
 			int amount = lottoPeople.size() * my_lottery_cost;
-            sendMessage(my_channel, "The Lottery winner is " + winner + " , winning a total of " + amount + " points!");
+            sendMessage(my_channel, "***WINNER WINNER CHICKEN DINNER*** The Lottery WINNER is " + winner + " , winning a total of " + amount + " points! Congrats!");
     		my_botUsers.incrementTankerPoints(winner, amount);
         	my_lottoSystem.emptyUsers();
             my_lottoWinner.emptyUsers();
         	lottoPeople.clear();
         	lotto_time_counter = 0;
+    		lottoOn = false;
+    		my_lottoAdvert.setLottoOn(false);
         	winner = "reset";
 		}
 		

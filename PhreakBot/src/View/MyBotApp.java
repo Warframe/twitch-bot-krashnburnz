@@ -44,6 +44,8 @@ import javax.swing.JMenuItem;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.KeyStroke;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
 
 import Model.MyBot;
 import Model.MyBotMain;
@@ -64,7 +66,12 @@ public class MyBotApp extends JFrame implements Observer, Runnable{		//can't ext
 	private TabPanel tabs;
 	private MyBotLogin loginWindow;
 	private JButton logout;
-	private JPanel primaryPanel;
+	private TabPanel myTabs;
+	private JPanel loginConsolePanel;
+	private JPanel currentViewerPanel;
+	private JPanel eventPanel;
+	private JPanel usersPanel;
+	private JPanel versionPanel;
 	private JLabel name;
 	private MyBotMain thebotMain;
 	private MyBot theBot;
@@ -221,15 +228,28 @@ public class MyBotApp extends JFrame implements Observer, Runnable{		//can't ext
 		
 		
 		//create login window and various other panels
+		myTabs = new TabPanel();
 		connectFlag = false;
-		primaryPanel = new JPanel();
 		name = new JLabel("");
+		
+		//Create Login window and thread for that window
+		loginConsolePanel = new JPanel();
 		loginWindow = new MyBotLogin(this);
 		Thread loginThread = new Thread(loginWindow);
 		loginThread.start();
+		
+		//Create panels for tabs
+		currentViewerPanel = new JPanel();
+		eventPanel = new JPanel();
+		usersPanel = new JPanel();
+		versionPanel  = new JPanel();;
+		
+		//setup logout btn
 		logout = logoutBtn(this);
 		logout.setEnabled(false);
-		Container loginScreen = wrapComponents();
+		
+		//Create container for placement
+		Container loginScreen = wrapComponentCenter(loginWindow);
 		Container logoutbtn = btnLayout();
 		
 		//create panels for console
@@ -247,20 +267,38 @@ public class MyBotApp extends JFrame implements Observer, Runnable{		//can't ext
 		imageLabel.setVisible(false);
 		//try to load user settings if exists
 		loadFile();
-
-		primaryPanel.add(loginScreen);
+		loginConsolePanel.add(loginScreen);
 		
-		//Create tempt frame for console while trying to connect
-		primaryPanel.setPreferredSize(new Dimension(500, 500));
-		primaryPanel.setVisible(true);
+		//Setup the attributes for the console panel
+		loginConsolePanel.setPreferredSize(new Dimension(500, 500));
+		loginConsolePanel.setVisible(true);
 		
 		setTitle("Stream Phreak Bot");
 		setDefaultCloseOperation(JFrame.DO_NOTHING_ON_CLOSE);
 		saveOnClosingWindow();
-		setPreferredSize(new Dimension(500, 520));
+		setPreferredSize(new Dimension(500, 540));
 		setLayout(new BorderLayout());
 		add(logoutbtn, BorderLayout.NORTH);
-		add(primaryPanel, BorderLayout.CENTER);
+		
+		//test labels
+		JLabel test1 = new JLabel();
+		test1.setText("TESTING 123");
+		JPanel paneltest = new JPanel();
+		paneltest.add(test1);
+		paneltest.setVisible(true);
+		
+		//Container test123 = wrapComponentCenter(paneltest);
+
+		//lets add the panels to the tabbed pane window
+		myTabs.add("Login/Console", loginConsolePanel);
+		myTabs.add("Current Viewers", currentViewerPanel);
+		myTabs.add("Events", eventPanel);
+		myTabs.add("Users", usersPanel);
+		myTabs.add("Version", versionPanel);
+		add(myTabs, BorderLayout.CENTER);
+		currentViewerPanel.add(paneltest);
+
+		//create image icon for the frame
 	    ImageIcon imgicon = new ImageIcon("cloud.png");
         this.setIconImage(imgicon.getImage());
         try {
@@ -413,8 +451,8 @@ public class MyBotApp extends JFrame implements Observer, Runnable{		//can't ext
 			    		  theBot.disconnect();
 		    		  }
 		    		  logout.setEnabled(false);
-						primaryPanel.remove(consolePanel);
-						primaryPanel.setVisible(false);
+						loginConsolePanel.remove(consolePanel);
+						loginConsolePanel.setVisible(false);
 						tempFrame.setPreferredSize(new Dimension(400, 400));
 						tempFrame.add(consolePanel);
 						tempFrame.pack();
@@ -423,7 +461,7 @@ public class MyBotApp extends JFrame implements Observer, Runnable{		//can't ext
 		    			debugSettingItem.setEnabled(true);
 						loginWindow.isConnectBtnEnabled(true);
 						loginWindow.setVisible(true);
-						primaryPanel.setVisible(true);
+						loginConsolePanel.setVisible(true);
 						theBot.wantDisconnect(true);
 						theBot.dispose();
 						loginWindow.isBotNametextEnabled(true);
@@ -457,11 +495,11 @@ public class MyBotApp extends JFrame implements Observer, Runnable{		//can't ext
 	 * Setup placements for components: log-in window at the center of the frame.
 	 * 
 	 * @return the container for the login window (borderlayout).
-	 * @author Ching-Ting Huang
+	 * @author Daniel Henderson
 	 */
-	private Container wrapComponents() {	
+	private Container wrapComponentCenter(JPanel the_panel) {	
 		Container center = new JPanel(new BorderLayout());
-		center.add(loginWindow, BorderLayout.CENTER);
+		center.add(the_panel, BorderLayout.CENTER);
 		return center;
 	} //wrapComponents
 	
@@ -547,7 +585,7 @@ public class MyBotApp extends JFrame implements Observer, Runnable{		//can't ext
 					if(theBot.isConnected()) {
 						tempFrame.remove(consolePanel);
 						tempFrame.setVisible(false);
-						primaryPanel.add(consolePanel);
+						loginConsolePanel.add(consolePanel);
 						debugSettingItem.setEnabled(false);
 						loginWindow.isConnectBtnEnabled(false);
 						loginWindow.setVisible(false);
