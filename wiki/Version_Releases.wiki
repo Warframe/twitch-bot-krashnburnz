@@ -2,6 +2,12 @@
 
 = Changelog =
 
+*Version 27 (bot revision 027)*: - Implemented some major improvements on the login screen
+  + Implemented Tabbedpane view for the primary GUI
+  + Started work on a voting system
+  + misc other small fixes 
+
+----
 *Version 20 (bot revision 020)*: - Implemented some major improvements on the login screen
   + Created an animated login button so the user knows its trying to connect
   + Text Fields disable while trying to login
