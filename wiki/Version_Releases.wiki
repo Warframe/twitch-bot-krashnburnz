@@ -14,7 +14,7 @@
   + Implemented Tabbedpane view for the primary GUI
   + Started work on a voting system
   + misc other small fixes 
-  + Fixes to vote system (Vote system will now tell how many points are in the pool when it adverts. Also the system will shut down automatically after the winner is chosen, where previously an admin would have to manually turn the system off)
+  + Fixes to lottery system (lottery system will now tell how many points are in the pool when it adverts. Also the system will shut down automatically after the winner is chosen, where previously an admin would have to manually turn the system off)
 
 ----
 *Version 20 (bot revision 020, document version 2)*: 
