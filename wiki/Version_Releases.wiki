@@ -3,10 +3,10 @@
 = Changelog =
 *Version 33 (bot revision 033, document version 20)*: - Implemented new feature to control when the bot Advertises that it is accumulating points.
 
-+ Implemented the ability (under settigns menu) to choose how often the both will advertise that is accumulating points. (Never, 5 mins, 10 mins, 30mins)
-+ Implemented the ability for the program to save this preference.
++ Implemented the ability (under settings menu) to choose how often the bot will advertise that is accumulating points. (Never, 5 mins, 10 mins, 30mins)
++ Implemented the ability for the program to save/load this preference to/from the user_settings file.
 
-***NOTE*** If after this build you have issue loading the bot, please try to DELETE the "user_settings" file located in the same folder/directory you are loading the .JAR file for the bot. This is because of the new addition to the save file, which might cause issues with outdated/malformed user_settings file. 
+***NOTE*** If after this build you have issue loading the bot, please try to DELETE the "user_settings" file located in the same folder/directory you are loading the .JAR file for the bot. This is because of the new addition to the save file listed above, which might cause issues with outdated/malformed user_settings file. 
 
 ----
 *Version 27 (bot revision 027, document version 2)*: - Implemented improvements on the GUI.
