@@ -17,6 +17,7 @@ public class Console extends WindowAdapter implements WindowListener, ActionList
 					
 	private final PipedInputStream pin=new PipedInputStream(); 
 	private final PipedInputStream pin2=new PipedInputStream(); 
+	private boolean isCustomConsoleOn = true;
 
 	
 	public Console()
@@ -48,9 +49,10 @@ public class Console extends WindowAdapter implements WindowListener, ActionList
 		
 		try
 		{
-			PipedOutputStream pout=new PipedOutputStream(this.pin);
-			System.setOut(new PrintStream(pout,true));
-
+			if(isCustomConsoleOn) {
+				PipedOutputStream pout=new PipedOutputStream(this.pin);
+				System.setOut(new PrintStream(pout,true));
+			}
 		} 
 		catch (java.io.IOException io)
 		{

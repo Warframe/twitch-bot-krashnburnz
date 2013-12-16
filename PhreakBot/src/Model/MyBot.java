@@ -73,9 +73,15 @@ public class MyBot extends PircBot implements Observer{
 	private String auctionHighBidder = "";
 	
 	private boolean wantingToDisconnect = false;
+	
+	private int advertTimer;
+	
+	private int advertCounter;
+	
+	private boolean isInitialAdvert = true;
 
     public MyBot(String name, boolean lotteryEnabled, boolean accumulateOnStartUp, ArrayList<String> ops, String the_owner, String the_pointsname, int the_lotto_cost, 
-    		int the_lottery_timer, String channel) {
+    		int the_lottery_timer, String channel, int advert_timer) {
     	
     	this.my_bot_name = name.toLowerCase();
         this.setName(name);
@@ -87,6 +93,8 @@ public class MyBot extends PircBot implements Observer{
         this.my_lottery_cost = the_lotto_cost;
         this.my_lottery_timer = the_lottery_timer;
         this.my_channel = channel;
+        this.advertTimer = advert_timer;
+        this.advertCounter = advert_timer;
         
         lotto_time_counter = 0;
         
@@ -449,8 +457,20 @@ public class MyBot extends PircBot implements Observer{
 			}
 	        my_users = newUserArray;
 	    	my_botUsers.setCurrentUsers(my_users);
-	    	if(this.currentlyStreaming && this.isConnected()) {
-	    		sendMessage(my_channel, "Currently accumulating points. to check your points type !" + my_points_name);
+	    	if(this.currentlyStreaming && this.isConnected()) {//check to see if connected, currently streaming, and if its time to advertise accumulation of points
+	    		if(advertCounter == 0 || (isInitialAdvert && advertCounter != -1)) {
+	    			System.out.println("**ADVERT COUNTER IS 0, say message**");
+		    		sendMessage(my_channel, "Currently accumulating points. to check your points type !" + my_points_name);
+		    		advertCounter = advertTimer;
+		    		isInitialAdvert = false;
+	    		} else if(advertCounter == -1) {
+	    			System.out.println("**ADVERT COUNTER IS -1, never say message**");
+	    			//do nothing, the advert is disabled
+	    		}  		
+	    		else {
+	    			System.out.println("**ADVERT COUNTER IS SUBTRACTING 5**");
+	    			advertCounter = advertCounter - 5;//subtract 5 since this update triggers every 5 mins
+	    		}
 	    	} else {
 	    		sendMessage(my_channel, "Not currently accumulating points. to check your points type !" + my_points_name);
 	    	}
@@ -547,5 +567,9 @@ public class MyBot extends PircBot implements Observer{
 	
 	public void wantDisconnect(boolean answer) {
 		wantingToDisconnect = answer;
+	}
+	
+	public void setAdvertTimer(int theAmount) {
+		advertTimer = theAmount;
 	}
 }

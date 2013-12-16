@@ -215,13 +215,14 @@ public class MyBotLogin extends JPanel implements Runnable{
 		    	  } else if(pointName.isEmpty()) {
 		    		  JOptionPane.showMessageDialog(null, "Required information missing! Please type the name you want your channel points to be called."); 
 		    	  } else {
-		    		  String [] myArgs = new String [6];
+		    		  String [] myArgs = new String [7];
 		    		  myArgs[0] = botName;
 		    		  myArgs[1] = channelName;
 		    		  myArgs[2] = botPassword;
 		    		  myArgs[3] = twitchIp;
 		    		  myArgs[4] = twitchPort;
 		    		  myArgs[5] = pointName;
+		    		  myArgs[6] = ""+mainBotApp.checkAdvertTimer();
 		    		  setConnectBtnName("Connecting...");
 		    		  isConnectBtnEnabled(false);
 		    		  mainBotApp.setStringOfUsers(myArgs);

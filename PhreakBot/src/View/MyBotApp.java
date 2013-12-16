@@ -32,6 +32,7 @@ import java.util.Observable;
 import java.util.Observer;
 import java.util.Scanner;
 
+import javax.swing.ButtonGroup;
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
@@ -43,6 +44,7 @@ import javax.swing.JMenuBar;
 import javax.swing.JMenuItem;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
+import javax.swing.JRadioButtonMenuItem;
 import javax.swing.KeyStroke;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
@@ -63,7 +65,6 @@ public class MyBotApp extends JFrame implements Observer, Runnable{		//can't ext
 	private JLabel imageLabel;
 	private JPanel consolePanel;
 	private Console console;
-	private TabPanel tabs;
 	private MyBotLogin loginWindow;
 	private JButton logout;
 	private TabPanel myTabs;
@@ -82,6 +83,10 @@ public class MyBotApp extends JFrame implements Observer, Runnable{		//can't ext
 	private final JCheckBoxMenuItem debugSettingItem;
 	private Frame tempFrame = new JFrame();
 	private Thread threadBtn;
+	private JRadioButtonMenuItem rbMenuItem5; //int value 5
+	private JRadioButtonMenuItem rbMenuItem10; //int value 10
+	private JRadioButtonMenuItem rbMenuItem30; //int value 30
+	private JRadioButtonMenuItem rbMenuItem0; //int value -1
 
 
 	//programFrame.setPreferredSize(new Dimension(800, 800));
@@ -122,9 +127,12 @@ public class MyBotApp extends JFrame implements Observer, Runnable{		//can't ext
 		    }
 		});
 		console = new Console();
+		
+		//Create and setup Menu Bar
 		JMenuBar menuBar = new JMenuBar();;
 		JMenu file = new JMenu("File");
 		JMenu settings = new JMenu("Settings");
+		JMenu advertTime = new JMenu("Advertise accumulation");
 		JMenu helpMenu = new JMenu("Help");
 		JMenu supportMenu = new JMenu("Support");
 		settings.setMnemonic(KeyEvent.VK_S);
@@ -139,6 +147,22 @@ public class MyBotApp extends JFrame implements Observer, Runnable{		//can't ext
 		supportMenu.setMnemonic(KeyEvent.VK_U);
 		supportMenu.getAccessibleContext().setAccessibleDescription(
 		        "Support Project");
+		rbMenuItem5 = new JRadioButtonMenuItem("5 mins. (Default)"); //int value 5
+		rbMenuItem10 = new JRadioButtonMenuItem("10 mins"); //int value 10
+		rbMenuItem30 = new JRadioButtonMenuItem("30 mins"); //int value 30
+		rbMenuItem0 = new JRadioButtonMenuItem("Never"); //int value -1
+		
+		//add the submenu Adverttime
+		ButtonGroup advertGroup = new ButtonGroup();
+		advertGroup.add(rbMenuItem0);
+		advertGroup.add(rbMenuItem5);
+		advertGroup.add(rbMenuItem10);
+		advertGroup.add(rbMenuItem30);
+		advertTime.add(rbMenuItem0);
+		advertTime.add(rbMenuItem5);
+		advertTime.add(rbMenuItem10);
+		advertTime.add(rbMenuItem30);
+		rbMenuItem5.setSelected(true);
 
 		JMenuItem exiMenuItem = new JMenuItem("Exit",
                 KeyEvent.VK_E);
@@ -214,8 +238,10 @@ public class MyBotApp extends JFrame implements Observer, Runnable{		//can't ext
 		      });
 
 		
+		//add items to menu bar
 		file.add(exiMenuItem);
 		settings.add(debugSettingItem);
+		settings.add(advertTime);
 		helpMenu.add(DocumentMenuItem);
 		helpMenu.add(AboutMenuItem);
 		supportMenu.add(DevMenuItem);
@@ -421,6 +447,20 @@ public class MyBotApp extends JFrame implements Observer, Runnable{		//can't ext
 					loginWindow.setTwitchIp(user_settings.get(3));
 					loginWindow.setTwitchPort(user_settings.get(4));
 					loginWindow.setPointName(user_settings.get(5));
+					if(user_settings.size() > 6) {
+						System.out.println("User Settings size: " + user_settings.size());
+						System.out.println("User file does have the save setting for the Advert Time, so load it : " + user_settings.get(6));
+						int savedAdvert = Integer.parseInt(user_settings.get(6));
+						if(savedAdvert == -1) {
+							rbMenuItem0.setSelected(true);
+						} else if (savedAdvert == 10) {
+							rbMenuItem10.setSelected(true);
+						} else if (savedAdvert == 30) {
+							rbMenuItem30.setSelected(true);
+						} else {
+							rbMenuItem5.setSelected(true);
+						}
+					}
 	         }
 	         catch (IOException i) {
 	        	 loginWindow.setSaveCreds(false); //If file doesn't exist, set the check box to false
@@ -471,6 +511,10 @@ public class MyBotApp extends JFrame implements Observer, Runnable{		//can't ext
 						loginWindow.isPorttextEnabled(true);
 						loginWindow.isPointstextEnabled(true);
 						loginWindow.isCredsCheckEnabled(true);
+						rbMenuItem0.setEnabled(true);
+						rbMenuItem5.setEnabled(true);
+						rbMenuItem10.setEnabled(true);
+						rbMenuItem30.setEnabled(true);
 						//consolePanel.setVisible(false);
 		    	  }
 		        }
@@ -537,6 +581,7 @@ public class MyBotApp extends JFrame implements Observer, Runnable{		//can't ext
 				user_settings.add("" + loginWindow.getTwitchIp());
 				user_settings.add("" + loginWindow.getTwitchPort());
 				user_settings.add("" + loginWindow.getPointName());
+				user_settings.add("" + checkAdvertTimer());
 				saveFile(user_settings, "user_settings.txt");
 			}
 			if(connectFlag) {
@@ -572,6 +617,10 @@ public class MyBotApp extends JFrame implements Observer, Runnable{		//can't ext
 			loginWindow.isPorttextEnabled(false);
 			loginWindow.isPointstextEnabled(false);
 			loginWindow.isCredsCheckEnabled(false);
+			rbMenuItem0.setEnabled(false);
+			rbMenuItem5.setEnabled(false);
+			rbMenuItem10.setEnabled(false);
+			rbMenuItem30.setEnabled(false);
 			boolean gooduser = false;
 			Iterator<String> it = thebetaUsers.iterator();
 			while(it.hasNext() && !gooduser) {
@@ -580,6 +629,7 @@ public class MyBotApp extends JFrame implements Observer, Runnable{		//can't ext
 				if(myArgs[1].equalsIgnoreCase(user) || !duringClosedbeta) {
 					thebotMain = new MyBotMain(myArgs);
 					theBot = thebotMain.getCreatedBot();
+					theBot.setAdvertTimer(checkAdvertTimer());
 					connectFlag = true;
 					gooduser = true;
 					if(theBot.isConnected()) {
@@ -631,5 +681,19 @@ public class MyBotApp extends JFrame implements Observer, Runnable{		//can't ext
 	public void setStringOfUsers(String[] myArgs) {
 		theUsersToCheck = myArgs;
 
+	}
+	
+	public int checkAdvertTimer() {
+		int advertTimer;
+		if(rbMenuItem0.isSelected()) {
+			advertTimer = -1;
+		} else if (rbMenuItem10.isSelected()) {
+			advertTimer = 10;
+		} else if (rbMenuItem30.isSelected()) {
+			advertTimer = 30;
+		} else {
+			advertTimer = 5;
+		}
+		return advertTimer;
 	}
 } //class
