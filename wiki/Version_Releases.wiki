@@ -1,15 +1,24 @@
 #summary This page contains all the releases for PhreakBot.
 
 = Changelog =
+*Version 33 (bot revision 033, document version 20)*: - Implemented some major improvements on the login screen
 
-*Version 27 (bot revision 027)*: - Implemented some major improvements on the login screen
++ Implemented the ability (under settigns menu) to choose how often the both will advertise that is accumulating points. (Never, 5 mins, 10 mins, 30mins)
++ Implemented the ability for the program to save this preference.
+
+***NOTE*** If after this build you have issue loading the bot, please try to DELETE the "user_settings" file located in the same folder/directory you are loading the .JAR file for the bot. This is because of the new addition to the save file, which might cause issues with outdated/malformed user_settings file. 
+
+----
+*Version 27 (bot revision 027, document version 2)*: - Implemented some major improvements on the login screen
+
   + Implemented Tabbedpane view for the primary GUI
   + Started work on a voting system
   + misc other small fixes 
   + Fixes to vote system (Vote system will now tell how many points are in the pool when it adverts. Also the system will shut down automatically after the winner is chosen, where previously an admin would have to manually turn the system off)
 
 ----
-*Version 20 (bot revision 020)*: - Implemented some major improvements on the login screen
+*Version 20 (bot revision 020, document version 2)*: - Implemented some major improvements on the login screen
+
   + Created an animated login button so the user knows its trying to connect
   + Text Fields disable while trying to login
   + Implemented threads for the connection method so the program does not freeze while trying to connect
@@ -31,6 +40,9 @@ More Information--> https://code.google.com/p/twitch-bot-krashnburnz/source/deta
 ----
 
 = PhreakBot Beta Downloads =
+
+Version 033 (released 12/15/2013): 
+http://pugetsoundvapes.com//phreakbot/download/beta/Phreak_Bot_ver_033.zip
 Version 027 (released 12/15/2013): 
 http://pugetsoundvapes.com/phreakbot/download/beta/Phreak_Bot_ver_027.zip
 
