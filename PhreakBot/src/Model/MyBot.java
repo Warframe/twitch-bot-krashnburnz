@@ -572,4 +572,9 @@ public class MyBot extends PircBot implements Observer{
 	public void setAdvertTimer(int theAmount) {
 		advertTimer = theAmount;
 	}
+
+	public void saveBackupUserFile() {
+		my_botUsers.saveBackupFile();
+		
+	}
 }

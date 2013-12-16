@@ -17,7 +17,7 @@ public class Console extends WindowAdapter implements WindowListener, ActionList
 					
 	private final PipedInputStream pin=new PipedInputStream(); 
 	private final PipedInputStream pin2=new PipedInputStream(); 
-	private boolean isCustomConsoleOn = true;
+	private boolean isCustomConsoleOn = false;
 
 	
 	public Console()

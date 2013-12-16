@@ -5,6 +5,11 @@ import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.Serializable;
+import java.sql.Time;
+import java.sql.Timestamp;
+import java.util.Calendar;
+import java.util.Date;
+import java.util.GregorianCalendar;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
@@ -97,6 +102,10 @@ public class MyBotUserPoints extends Observable implements Runnable, Serializabl
 		UsersMap = the_map;
 	}
 	
+	public Map<User, Integer> getUserMap() {
+		return UsersMap;
+	}
+	
 	public void setChannel(String the_channel) {
 		my_channel = the_channel;
 	}
@@ -137,17 +146,17 @@ public class MyBotUserPoints extends Observable implements Runnable, Serializabl
 	 * @param Map<User, Integer> the_Usermap
 	 * @param String The file name
 	 */
-	private void saveFile(Map<User, Integer> the_Usermap, String the_name) {   
+	public void saveFile(Map<User, Integer> the_Usermap, String the_name) {   
 	      try {
 	         FileOutputStream fileOut = new FileOutputStream(the_name);
 	         ObjectOutputStream out = new ObjectOutputStream(fileOut);
 	         out.writeObject(the_Usermap);
 	         out.close();
 	         fileOut.close();
-	        	System.out.println("Saving User map to file");
+	        	System.out.println("Saving " + the_name + " to file");
 	      }
 	      catch(IOException i) {
-	        	System.out.println("Failure to save user map file.");
+	        	System.out.println("Failure to save " + the_name + " to file.");
 	          i.printStackTrace();
 	      }
 	    }
@@ -265,6 +274,14 @@ public class MyBotUserPoints extends Observable implements Runnable, Serializabl
     		System.out.println("The user " + user + " does not exist.");
     	}
     }
+
+	public void saveBackupFile() {
+        Calendar c = Calendar.getInstance();
+        String timeStamp = "_" +c.get(Calendar.MONTH) + "_" + c.get(Calendar.DAY_OF_MONTH)+ "_" + c.get(Calendar.YEAR) + "_"
+        		+ "_" +   c.get(Calendar.HOUR) + c.get(Calendar.MINUTE)+ c.get(Calendar.SECOND);
+		System.out.println("Saving User Map to file name --> User_Map_File_backup_" + timeStamp);
+		saveFile(UsersMap, "User_Map_File_backup_" + timeStamp);
+	}
 	
 }
 	

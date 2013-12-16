@@ -87,6 +87,9 @@ public class MyBotApp extends JFrame implements Observer, Runnable{		//can't ext
 	private JRadioButtonMenuItem rbMenuItem10; //int value 10
 	private JRadioButtonMenuItem rbMenuItem30; //int value 30
 	private JRadioButtonMenuItem rbMenuItem0; //int value -1
+	
+	private JRadioButtonMenuItem rbmenuBackupYes; //option to backup
+	private JRadioButtonMenuItem rbMenuBackupNo; //option to not backup
 
 
 	//programFrame.setPreferredSize(new Dimension(800, 800));
@@ -133,6 +136,7 @@ public class MyBotApp extends JFrame implements Observer, Runnable{		//can't ext
 		JMenu file = new JMenu("File");
 		JMenu settings = new JMenu("Settings");
 		JMenu advertTime = new JMenu("Advertise accumulation");
+		JMenu backupChoice = new JMenu("Periodic User Backups");
 		JMenu helpMenu = new JMenu("Help");
 		JMenu supportMenu = new JMenu("Support");
 		settings.setMnemonic(KeyEvent.VK_S);
@@ -163,7 +167,19 @@ public class MyBotApp extends JFrame implements Observer, Runnable{		//can't ext
 		advertTime.add(rbMenuItem10);
 		advertTime.add(rbMenuItem30);
 		rbMenuItem5.setSelected(true);
+		
+		//add submenu for Backups
+		//This setting will basically create a copy of the USER_MAP file with a time stamp
+		rbmenuBackupYes = new JRadioButtonMenuItem("Backup On ShutDown");
+		rbMenuBackupNo= new JRadioButtonMenuItem("Don't Backup On ShutDown (Default)");
+		ButtonGroup backupGroup = new ButtonGroup();
+		backupGroup.add(rbmenuBackupYes);
+		backupGroup.add(rbMenuBackupNo);
+		rbMenuBackupNo.setSelected(true);
+		backupChoice.add(rbmenuBackupYes);
+		backupChoice.add(rbMenuBackupNo);
 
+		
 		JMenuItem exiMenuItem = new JMenuItem("Exit",
                 KeyEvent.VK_E);
 		JMenuItem DocumentMenuItem = new JMenuItem("Documentation",
@@ -238,10 +254,11 @@ public class MyBotApp extends JFrame implements Observer, Runnable{		//can't ext
 		      });
 
 		
-		//add items to menu bar
+		//add items to main and sub menu bars
 		file.add(exiMenuItem);
 		settings.add(debugSettingItem);
 		settings.add(advertTime);
+		settings.add(backupChoice);
 		helpMenu.add(DocumentMenuItem);
 		helpMenu.add(AboutMenuItem);
 		supportMenu.add(DevMenuItem);
@@ -447,7 +464,7 @@ public class MyBotApp extends JFrame implements Observer, Runnable{		//can't ext
 					loginWindow.setTwitchIp(user_settings.get(3));
 					loginWindow.setTwitchPort(user_settings.get(4));
 					loginWindow.setPointName(user_settings.get(5));
-					if(user_settings.size() > 6) {
+					if(user_settings.size() >= 7) {
 						System.out.println("User Settings size: " + user_settings.size());
 						System.out.println("User file does have the save setting for the Advert Time, so load it : " + user_settings.get(6));
 						int savedAdvert = Integer.parseInt(user_settings.get(6));
@@ -461,6 +478,16 @@ public class MyBotApp extends JFrame implements Observer, Runnable{		//can't ext
 							rbMenuItem5.setSelected(true);
 						}
 					}
+					if(user_settings.size() >= 8) {
+						System.out.println("User file does have the - Backup Selected setting.");
+						int savedBackup = Integer.parseInt(user_settings.get(7));
+						if(savedBackup == 1) {
+							rbmenuBackupYes.setSelected(true);
+						} else {
+							rbMenuBackupNo.setSelected(true);
+						}
+					}
+
 	         }
 	         catch (IOException i) {
 	        	 loginWindow.setSaveCreds(false); //If file doesn't exist, set the check box to false
@@ -570,8 +597,17 @@ public class MyBotApp extends JFrame implements Observer, Runnable{		//can't ext
 				"Exit Program", 
 				JOptionPane.YES_NO_OPTION);				
 		if (result == JOptionPane.OK_OPTION) {
-			//controller.saveData();
+			boolean saveBackupSelected = rbmenuBackupYes.isSelected();
+			int savedBackupInt = 1;
+			if(saveBackupSelected) {
+				System.out.println("We might need to backup User Map Files since the option is selected! Let's check....");
+				saveBackupUserFile();
+			} else {
+				System.out.println("We dont need to backup.");
+				savedBackupInt = 0;
+			}
 			MyBotApp.this.dispose();
+			//SAVE BACKUP IF OPTIONS SELECTED
 			if(loginWindow.getSaveCreds()) { //if save credentials is clicked, save data to file
 				ArrayList<String> user_settings = new ArrayList<String>();
 				//this will not check for empty boxes, concatenate with an empty string the contents
@@ -582,7 +618,9 @@ public class MyBotApp extends JFrame implements Observer, Runnable{		//can't ext
 				user_settings.add("" + loginWindow.getTwitchPort());
 				user_settings.add("" + loginWindow.getPointName());
 				user_settings.add("" + checkAdvertTimer());
+				user_settings.add("" + savedBackupInt);
 				saveFile(user_settings, "user_settings.txt");
+				
 			}
 			if(connectFlag) {
 				theBot.disconnect();
@@ -680,6 +718,15 @@ public class MyBotApp extends JFrame implements Observer, Runnable{		//can't ext
 	
 	public void setStringOfUsers(String[] myArgs) {
 		theUsersToCheck = myArgs;
+
+	}
+	
+	private void saveBackupUserFile() {
+		if(theBot != null) {
+			theBot.saveBackupUserFile();
+		} else {
+			System.out.println("Will not backup since the bot was not connected.");
+		}
 
 	}
 	
