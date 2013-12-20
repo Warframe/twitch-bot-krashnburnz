@@ -74,6 +74,7 @@ public class MyBotApp extends JFrame implements Observer, Runnable{		//can't ext
 	private JPanel usersPanel;
 	private JPanel versionPanel;
 	private JLabel name;
+	private UserPanel currentUserPanel;
 	private MyBotMain thebotMain;
 	private MyBot theBot;
 	private boolean connectFlag;
@@ -90,6 +91,7 @@ public class MyBotApp extends JFrame implements Observer, Runnable{		//can't ext
 	
 	private JRadioButtonMenuItem rbmenuBackupYes; //option to backup
 	private JRadioButtonMenuItem rbMenuBackupNo; //option to not backup
+	private boolean waspreviouslyConnected = false;
 
 
 	//programFrame.setPreferredSize(new Dimension(800, 800));
@@ -205,6 +207,9 @@ public class MyBotApp extends JFrame implements Observer, Runnable{		//can't ext
           });
 		exiMenuItem.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_1, ActionEvent.ALT_MASK));
 		exiMenuItem.getAccessibleContext().setAccessibleDescription("Exit the program...");
+		
+		
+		//Setup Menu Item Listeners
 		exiMenuItem.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent event) {
             	shutDownAndSave();
@@ -330,7 +335,8 @@ public class MyBotApp extends JFrame implements Observer, Runnable{		//can't ext
 		paneltest.add(test1);
 		paneltest.setVisible(true);
 		
-		//Container test123 = wrapComponentCenter(paneltest);
+		//setup Current Viewer Panel
+		currentUserPanel = new UserPanel();
 
 		//lets add the panels to the tabbed pane window
 		myTabs.add("Login/Console", loginConsolePanel);
@@ -514,6 +520,7 @@ public class MyBotApp extends JFrame implements Observer, Runnable{		//can't ext
 		logout.addActionListener(new ActionListener() {
 		      public void actionPerformed(final ActionEvent the_event) {
 		    	  if (the_event.getSource() == logout) {
+		    		  waspreviouslyConnected = true;
 		    		  if(theBot.isConnected()) {
 			    		  theBot.disconnect();
 		    		  }

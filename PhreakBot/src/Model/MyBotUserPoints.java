@@ -36,8 +36,8 @@ public class MyBotUserPoints extends Observable implements Runnable, Serializabl
 	
 	private boolean lottoOn=false;
 	
-	public MyBotUserPoints(Map<User, Integer> the_map, String the_channel, User[] the_Users) {
-		setUserMap(the_map);
+	public MyBotUserPoints(String the_channel, User[] the_Users) {
+		updateUserMap();
 		setChannel(the_channel);
 		setCurrentUsers(the_Users);
 		my_runCount = 0; 
@@ -50,16 +50,7 @@ public class MyBotUserPoints extends Observable implements Runnable, Serializabl
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-    	
-    	setChanged();
-    	notifyObservers();
-    	
-    	try {
-			wait (30000);
-		} catch (InterruptedException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
+
 	        while (true) {
 	        	UsersMap = loadFile("User_Map_File");
 	        	if(UsersMap == null) {
@@ -129,14 +120,30 @@ public class MyBotUserPoints extends Observable implements Runnable, Serializabl
         		new_User = my_Users[i];	
     		}
     	}
-		if(new_User != null && UsersMap.get(new_User) != null) {
-    		return UsersMap.get(new_User);
+		if(new_User != null) {
+			if(UsersMap.get(new_User) != null) {
+	    		return UsersMap.get(new_User);
+			} else {
+				System.out.println("USER DOES NOT EXIST IN User_map");	
+		    	return 0;
+			}
+
 		} else {
-			System.out.println("User is new, or has not updated in system yet!");	
-	    	return 0;
+			System.out.println("USER DOES NOT EXIST IN my_Users");	
+	    	return -1;
 		}
 
 	
+	}
+	
+	public void updateUserMap() {
+    	UsersMap = loadFile("User_Map_File");
+    	if(UsersMap == null) {
+    		System.out.println("UserMap is NULL");
+    		Map<User, Integer> themap = new HashMap<User, Integer>();
+    		themap.put(new User("@", "user10204354"), 1);
+    		UsersMap = themap;
+    	} 
 	}
 	
 	

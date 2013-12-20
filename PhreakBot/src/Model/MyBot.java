@@ -48,13 +48,13 @@ public class MyBot extends PircBot implements Observer{
 	
 	private List<String> tankerPointsQue = new LinkedList<String> ();
 	
-	private Map<User, Integer> my_usersMap = new HashMap<User, Integer>();;
-	
 	private User[] my_users;
 	
 	private MyBotUserPoints my_botUsers;
 	
 	private MyKeywordEntry my_keywordEntrys;
+	
+	private MyUpdateUsers my_updateUsers;
 	
 	private MyTankerPoints my_userTankerPoints;
 	
@@ -98,7 +98,7 @@ public class MyBot extends PircBot implements Observer{
         
         lotto_time_counter = 0;
         
-        my_botUsers = new MyBotUserPoints(my_usersMap, my_channel, my_users);
+        my_botUsers = new MyBotUserPoints(my_channel, my_users);
     	Thread pointAdder_t = new Thread(my_botUsers);
     	my_botUsers.addObserver(this);
     	pointAdder_t.start();
@@ -108,6 +108,11 @@ public class MyBot extends PircBot implements Observer{
     	Thread KeywordEntrys_t = new Thread(my_keywordEntrys);
     	my_keywordEntrys.addObserver(this);
     	KeywordEntrys_t.start();
+    	
+    	my_updateUsers = new MyUpdateUsers(my_channel, this);
+    	Thread updateUsers_t = new Thread(my_updateUsers);
+    	my_updateUsers.addObserver(this);
+    	updateUsers_t.start();
     	
     	my_userTankerPoints = new MyTankerPoints();
     	Thread tankerPoints_t = new Thread(my_userTankerPoints);
@@ -391,10 +396,10 @@ public class MyBot extends PircBot implements Observer{
         		int botUserPoints = my_botUsers.getMyCurrentPoints(sender.toLowerCase());
             	my_userTankerPoints.addUser(sender, botUserPoints);
             	if(botUserPoints == 0){
-        			sendMessage(my_channel, "Notice : " + sender + ", you are either a new viewer, or the system has not updated your points yet. Please wait a few minutes and try again.");
-
+        			sendMessage(my_channel, sender + " : You seem to be a new viewer to this channel! Welcome to the channel and we hope you enjoy your time here! Don't forget to click that follow button!");
+            	} else if(botUserPoints == -1) {
+        			sendMessage(my_channel, sender + " : You don't seem to exist in the current viewer list. Either Twitch is having issues currently or you just joined the channel. Please try again later.");
             	}
-
         	}
         }
         
@@ -447,8 +452,9 @@ public class MyBot extends PircBot implements Observer{
 
 	@Override
 	public void update(Observable arg0, Object arg1) {
+		
+		//MyBotUserPoints Observer: this Advertises that the points are being accumulated
 		if(arg0 instanceof MyBotUserPoints) {
-            String time = new java.util.Date().toString();
 			int i;
 			org.jibble.pircbot.User[] temp_users = getUsers(my_channel);
 			User[] newUserArray = new User[temp_users.length];
@@ -476,27 +482,40 @@ public class MyBot extends PircBot implements Observer{
 	    	}
 
 		}
+		
+		//MyKeywordEntry Observer: Displays users entered into Giveaway, then emptys the String, to start again
 		if(arg0 instanceof MyKeywordEntry) {
 			sendMessage(my_channel, ("The following users have been entered into the giveaway: " + my_keywordEntrys.getUsers()));
 			my_keywordEntrys.emptyUsers();
 		}
+		
+		//MyUpdateUsers Observer: Updates the actual my_users array of viewers actively watching the stream
+		if(arg0 instanceof MyUpdateUsers) {
+	        my_users = (User[]) arg1;
+	        my_botUsers.setCurrentUsers((User[]) arg1);
+		}
+		
+		//MyTankerpoints Observer: Displays the user's points that call the command to check points
 		if(arg0 instanceof MyTankerPoints) {
             sendMessage(my_channel, "Current User Points: " + my_userTankerPoints.getUsers());
             my_userTankerPoints.emptyUsers();
             tankerPointsQue.clear();
 		}
 		
+		//MyLottoSystem Observer: Lists who has been entered into the lottery
 		if(arg0 instanceof MyLottoSystem) {
             sendMessage(my_channel, "Users entered into Lottery: " + my_lottoSystem.getUsers());
         	my_lottoSystem.emptyUsers();
 		}
 		
+		//MylottoAdvert Observer: Advertises the Lottery is active, and how to buy tickets.
 		if(arg0 instanceof MyLotteryAdvert) {
 			int amount = lottoPeople.size() * my_lottery_cost;
 			lotto_time_counter += (my_lottery_timer / 5);
             sendMessage(my_channel, "Lottery is currently active with a total of " + amount + " points in the pool. To purchase a ticket for " + my_lottery_cost + " points, type !buyticket. The lottery will end in " + ((my_lottery_timer - lotto_time_counter) / 60000) + " minutes.");
 		}
 		
+		//MyLotteryWinner Observer: Will display the winner, stop the lotton system, and do other work
 		if(arg0 instanceof MyLotteryWinner) {
 			String winner = my_lottoWinner.getWinner();
 			int amount = lottoPeople.size() * my_lottery_cost;
@@ -511,6 +530,9 @@ public class MyBot extends PircBot implements Observer{
         	winner = "reset";
 		}
 		
+		//MyConnected Observer: Checks if the bot disconnects, and try reconnecting. 
+		// This is because of the way PircBot disconnects if idle after 5 mins. Unable to fix because
+		// Pircbot does not allow the ability to override the method which is a huge oversite on the PircBot DEV!
 		if(arg0 instanceof MyConnected) {
 			if(!this.isConnected() && !wantingToDisconnect) {
 				try {
@@ -575,6 +597,12 @@ public class MyBot extends PircBot implements Observer{
 
 	public void saveBackupUserFile() {
 		my_botUsers.saveBackupFile();
+		
+	}
+
+	public void setCurrentUsers(User[] my_users2) {
+        my_users = my_users2;
+        my_botUsers.setCurrentUsers(my_users2);
 		
 	}
 }
