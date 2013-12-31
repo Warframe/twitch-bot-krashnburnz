@@ -21,7 +21,8 @@ public class MyBotMain {
 	//General Settings
 	private static final boolean LOTTERY_ENABLED_ON_STARTUP = false;
 	private static final int LOTTERY_COST = 5;
-	private static final int LOTTERY_TIMER_MILLISEC = 1800000;
+	//private static final int LOTTERY_TIMER_MILLISEC = 1800000;
+	private static final int LOTTERY_TIMER_MILLISEC = 360000;
 	private static final boolean ACCUMULATE_POINTS_ON_STARTUP = true;
 	private static final String[] CHANNEL_OP1 = {"krashnburnz"};
 	private static boolean enable_verbose_debug = true;

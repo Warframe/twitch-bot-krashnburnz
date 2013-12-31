@@ -270,8 +270,14 @@ public class MyBot extends PircBot implements Observer{
             	if(scanner.hasNextInt()) {
             		amount = scanner.nextInt();
             		System.out.println("GOT THE AMOUNT TO SUBTRACT: " + amount);
-            		my_botUsers.decrementTankerPoints(user, amount);
-                    sendMessage(channel, sender + ": " + amount + " " + my_points_name + " removed from " + user);
+            		int currentUserPoints = my_botUsers.getMyCurrentPoints(user);
+            		if( currentUserPoints < amount) {
+                        sendMessage(channel, sender + ": " + user + " only has " + currentUserPoints + " " + my_points_name + ". Please subtract this amount instead." );
+            		} else {
+                		my_botUsers.decrementTankerPoints(user, amount);
+                        sendMessage(channel, sender + ": " + amount + " " + my_points_name + " removed from " + user + " leaving a total of " + my_botUsers.getMyCurrentPoints(user) + " " + my_points_name + " remaining.");
+            		}
+
                 	
             	} else {
                     sendMessage(channel, sender + ": Missing <amount> argument. Proper Command:  !subpoints <name> <amount>");
@@ -284,24 +290,17 @@ public class MyBot extends PircBot implements Observer{
         if (message.toLowerCase().contains("!addpointall") && sender.equals(channel_owner) ||
         		(message.toLowerCase().contains("!addpointall") && the_ops.contains(sender))) {
         	int amount;
-        	String current_users = "";
             	if(scanner.hasNextInt()) {
             		amount = scanner.nextInt();
             		System.out.println("GOT THE AMOUNT TO ADD: " + amount);
                 	for(int i = 0; i < my_users.length; i++ ){
                 		String this_user = my_users[i].getNick();
                 		my_botUsers.incrementTankerPoints(this_user, amount);
-                		if(current_users.length() < 2) {
-                			current_users = this_user;
-                		} else {
-                			
-                		}
-                		current_users = current_users + ", " + this_user;
                 	}
-                    sendMessage(channel, sender + ": " + amount + " " + my_points_name + " added to" + current_users);
+                    sendMessage(channel, sender + ": " + amount + " " + my_points_name + " added to every viewer currently watching!");
                 	
             	} else {
-                    sendMessage(channel, sender + ": Missing <amount> argument. Proper Command:  !subpoints <name> <amount>");
+                    sendMessage(channel, sender + ": Missing <amount> argument. Proper Command:  !addpointall <amount>");
             	}
 
         }
@@ -406,6 +405,7 @@ public class MyBot extends PircBot implements Observer{
         if (message.toLowerCase().contains("what are " + my_points_name) || message.toLowerCase().contains("what is " + my_points_name)) {
             sendMessage(channel, sender + ": " + my_points_name.toUpperCase() + " are accumulated while you are on watching the active stream on this channel. You will receive 1 point every 5 minutes of watching. You can use these points for certain events we hold.");
         }
+        
         if (command.equalsIgnoreCase("krashnburnz")) {
             sendMessage(channel, sender + ": Creater of this bot. email --> krashnburnz@yahoo.com");
         }
@@ -509,7 +509,7 @@ public class MyBot extends PircBot implements Observer{
 		}
 		
 		//MylottoAdvert Observer: Advertises the Lottery is active, and how to buy tickets.
-		if(arg0 instanceof MyLotteryAdvert) {
+		if(arg0 instanceof MyLotteryAdvert && lottoOn) {
 			int amount = lottoPeople.size() * my_lottery_cost;
 			lotto_time_counter += (my_lottery_timer / 5);
             sendMessage(my_channel, "Lottery is currently active with a total of " + amount + " points in the pool. To purchase a ticket for " + my_lottery_cost + " points, type !buyticket. The lottery will end in " + ((my_lottery_timer - lotto_time_counter) / 60000) + " minutes.");
@@ -525,8 +525,13 @@ public class MyBot extends PircBot implements Observer{
             my_lottoWinner.emptyUsers();
         	lottoPeople.clear();
         	lotto_time_counter = 0;
-    		lottoOn = false;
-    		my_lottoAdvert.setLottoOn(false);
+        	if (lottoOn) {
+        		lottoOn = false;
+        		my_lottoAdvert.setLottoOn(false);
+                sendMessage(my_channel, "The Lottery System has been shut down!");    	
+        	} else {
+        		sendMessage(my_channel, "The Lottery System is already de-activated.");
+        	}
         	winner = "reset";
 		}
 		

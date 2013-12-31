@@ -201,7 +201,7 @@ public class MyBotUserPoints extends Observable implements Runnable, Serializabl
 	public void clearAllPoints() {
 		UsersMap.clear();
     	saveFile(UsersMap, "User_Map_File");
-		System.out.println("UserMap is been cleared.");
+		System.out.println("UserMap has been cleared.");
 	}
 	
 	public synchronized void decrementTankerPoints(String user, int the_amount) {
@@ -215,9 +215,7 @@ public class MyBotUserPoints extends Observable implements Runnable, Serializabl
 			the_current_entry = iterator.next();
 			the_user = the_current_entry.getKey();
 			nick = the_user.getNick().toLowerCase();
-			System.out.println("GOT NEW USER : " + nick);
 			if(nick.toLowerCase().equalsIgnoreCase(user.toLowerCase())) {
-				System.out.println("USER " +nick + " IS EQUAL to " + user);
 				exists = true;
 	        	int num = (int) UsersMap.get(the_user);
 	        	int tempnum = num - the_amount;
@@ -225,17 +223,13 @@ public class MyBotUserPoints extends Observable implements Runnable, Serializabl
 	        			System.out.println("ERROR, USER DOES NOT HAVE ENOUGH POINTS");
 	        		} else {
 	            		UsersMap.put(the_user, tempnum);
-	            		if(lottoOn) {
-		            		System.out.println("Decremented " + the_amount + "of Tanker points from " + nick + 
-		            				" for a current total of "+ tempnum);
-	            		}
 	                	saveFile(UsersMap, "User_Map_File");
 	        		}
                 	break;	
 			}
 			else {
 				exists = false;
-				System.out.println("USER " +nick + " IS NOT EQUAL to " + user);
+				//System.out.println("USER " +nick + " IS NOT EQUAL to " + user);
 			}
 			
 		}
@@ -255,9 +249,7 @@ public class MyBotUserPoints extends Observable implements Runnable, Serializabl
 			the_current_entry = iterator.next();
 			the_user = the_current_entry.getKey();
 			nick = the_user.getNick().toLowerCase();
-			System.out.println("GOT NEW USER : " + nick);
 			if(nick.toLowerCase().equalsIgnoreCase(user.toLowerCase())) {
-				System.out.println("USER " +nick + " IS EQUAL to " + user);
 				exists = true;
 	        	int num = (int) UsersMap.get(the_user);
 	        	int tempnum = num + the_amount;
@@ -265,15 +257,12 @@ public class MyBotUserPoints extends Observable implements Runnable, Serializabl
 	        			System.out.println("Error, user has negative points");
 	        		} else {
 	            		UsersMap.put(the_user, tempnum);
-	            		System.out.println("Incremented " + the_amount + "of Tanker points to " + nick + 
-	            				" for a current total of "+ tempnum);
 	                	saveFile(UsersMap, "User_Map_File");
 	        		}
                 	break;	
 			}
 			else {
 				exists = false;
-				//System.out.println("USER " +nick + " IS NOT EQUAL to " + user);
 			}
 			
 		}
