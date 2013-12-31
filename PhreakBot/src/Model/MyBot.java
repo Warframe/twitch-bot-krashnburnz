@@ -79,6 +79,17 @@ public class MyBot extends PircBot implements Observer{
 	private int advertCounter;
 	
 	private boolean isInitialAdvert = true;
+	
+	private int my_auction_incrementAmount;
+	
+	private int my_auction_Incrementbidwarnings = 0;
+	
+	private int my_auction_Pointbidwarnings = 0;
+	
+	private int my_auction_SpamWarning = 0;
+	
+	Map<String, Long> BiddersMap;
+
 
     public MyBot(String name, boolean lotteryEnabled, boolean accumulateOnStartUp, ArrayList<String> ops, String the_owner, String the_pointsname, int the_lotto_cost, 
     		int the_lottery_timer, String channel, int advert_timer) {
@@ -95,8 +106,9 @@ public class MyBot extends PircBot implements Observer{
         this.my_channel = channel;
         this.advertTimer = advert_timer;
         this.advertCounter = advert_timer;
-        
+        my_auction_incrementAmount = 1000;
         lotto_time_counter = 0;
+        BiddersMap = new HashMap<String, Long>();
         
         my_botUsers = new MyBotUserPoints(my_channel, my_users);
     	Thread pointAdder_t = new Thread(my_botUsers);
@@ -161,26 +173,24 @@ public class MyBot extends PircBot implements Observer{
     	my_channel = channel; 
         my_message = message;
     	String command = "";
-    	
-    	@SuppressWarnings("resource")
 		Scanner scanner = new Scanner(my_message);
     	if(scanner.hasNext()) {
         	command = scanner.next();	
     	}
     	
-        if (message.toLowerCase().contains("!setkeyword") && sender.equals(channel_owner) ||
-        		(message.toLowerCase().contains("!setkeyword") && the_ops.contains(sender))) {
+        if (command.equalsIgnoreCase("!setkeyword") && sender.equals(channel_owner) ||
+        		(command.equalsIgnoreCase("!setkeyword") && the_ops.contains(sender))) {
         	if(scanner.hasNext()) {
         		my_keyword = scanner.next();
             	giveawayOn = true;
-                sendMessage(channel, sender + ": The giveaway keyword " +my_keyword  +" has been set. The giveaway is now active.");
+                sendMessage(channel, sender + ": The giveaway keyword " + my_keyword  +" has been set. The giveaway is now active.");
         	} else {
-                sendMessage(channel, sender + ": Lack of arguments to set keyword and start event.");
+                sendMessage(channel, sender + ": Lack of arguments to set keyword and start event. Proper format: !setkeyword <keyword>");
         	}
         }
         
-        if (message.toLowerCase().contains("!checkpoints") && sender.equals(channel_owner) ||
-        		(message.toLowerCase().contains("!checkpoints") && the_ops.contains(sender))) {
+        if (command.equalsIgnoreCase("!checkpoints") && sender.equals(channel_owner) ||
+        		(command.equalsIgnoreCase("!checkpoints") && the_ops.contains(sender))) {
         	String user;
         	if(scanner.hasNext()) {
         		user = scanner.next();
@@ -190,8 +200,8 @@ public class MyBot extends PircBot implements Observer{
         	}
         }
         
-        if (message.equalsIgnoreCase("!removekeyword") && sender.equals(channel_owner) ||
-        		(message.equalsIgnoreCase("!removekeyword") && the_ops.contains(sender))) {
+        if (command.equalsIgnoreCase("!removekeyword") && sender.equals(channel_owner) ||
+        		(command.equalsIgnoreCase("!removekeyword") && the_ops.contains(sender))) {
         		my_keyword = "";
             	giveawayOn = false;
             	eventKeywordPeople.clear();
@@ -237,10 +247,9 @@ public class MyBot extends PircBot implements Observer{
                 sendMessage(channel, "THE RANDOM WINNER (Follower) is : " + winner);
         	
         }
-        
-        
-        if (message.toLowerCase().contains("!addpoints") && sender.equals(channel_owner) ||
-        		(message.toLowerCase().contains("!addpoints") && the_ops.contains(sender))) {
+                
+        if (command.equalsIgnoreCase("!addpoints") && sender.equals(channel_owner) ||
+        		(command.equalsIgnoreCase("!addpoints") && the_ops.contains(sender))) {
         	String user;
         	int amount;
         	if(scanner.hasNext()) {
@@ -260,8 +269,8 @@ public class MyBot extends PircBot implements Observer{
         	}
         }
 
-        if (message.toLowerCase().contains("!subpoints") && sender.equals(channel_owner) ||
-        		(message.toLowerCase().contains("!subpoints") && the_ops.contains(sender))) {
+        if (command.equalsIgnoreCase("!subpoints") && sender.equals(channel_owner) ||
+        		(command.equalsIgnoreCase("!subpoints") && the_ops.contains(sender))) {
         	String user;
         	int amount;
         	if(scanner.hasNext()) {
@@ -287,8 +296,8 @@ public class MyBot extends PircBot implements Observer{
         	}
         }
         
-        if (message.toLowerCase().contains("!addpointall") && sender.equals(channel_owner) ||
-        		(message.toLowerCase().contains("!addpointall") && the_ops.contains(sender))) {
+        if (command.equalsIgnoreCase("!addpointall") && sender.equals(channel_owner) ||
+        		(command.equalsIgnoreCase("!addpointall") && the_ops.contains(sender))) {
         	int amount;
             	if(scanner.hasNextInt()) {
             		amount = scanner.nextInt();
@@ -313,8 +322,13 @@ public class MyBot extends PircBot implements Observer{
         if (command.equalsIgnoreCase("!startAuction") && sender.equals(channel_owner) ||
         		(command.equalsIgnoreCase("!startAuction") && the_ops.contains(sender))) {
         	if (!auctionOn) {
+            	if(scanner.hasNextInt()) {
+            		my_auction_incrementAmount = scanner.nextInt();
            		auctionOn = true;
-                sendMessage(channel, "The Auction has started! Type !bid <amount>  to enter the auction. You must have greater then or equal to the bid amount or your bid will be ignored.");    	
+                sendMessage(channel, "The Auction has started! Type !bid <amount>  to enter the auction. You must have greater then or equal to the bid amount or your bid will be ignored. Max bid increments are set to " + my_auction_incrementAmount + " " + my_points_name);
+            	} else {
+                    sendMessage(channel, sender + ": Missing <amount> arguments. Proper Command:  !startAuction <max_bid_increment_amount>");
+            	}
         	} else {
         		sendMessage(channel, "The Auction is already running.");
         	}
@@ -330,6 +344,7 @@ public class MyBot extends PircBot implements Observer{
         			my_botUsers.decrementTankerPoints(auctionHighBidder, auctionHighBidAmount);
                     auctionHighBidAmount = 0;
                     auctionHighBidder = "";
+                    BiddersMap.clear();
         		}
         	} else {
                 sendMessage(channel, "There is no auction currently active."); 
@@ -339,23 +354,65 @@ public class MyBot extends PircBot implements Observer{
         if (command.equalsIgnoreCase("!highBidder") && sender.equals(channel_owner) ||
         		(command.equalsIgnoreCase("!highBidder") && the_ops.contains(sender))) {
         	if(auctionOn) {
-                sendMessage(channel, "CURRENT HIGH BIDDER : " + auctionHighBidder + "with a bid of " + auctionHighBidAmount + " " + my_points_name + "!"); 
+                sendMessage(channel, "CURRENT HIGH BIDDER : " + auctionHighBidder + " with a bid of " + auctionHighBidAmount + " " + my_points_name + "!"); 
         	}
          }
 
-        if (message.toLowerCase().contains("!bid") && auctionOn) {
+        if (command.equalsIgnoreCase("!bid") && auctionOn) {
+        	int IncrementBuffer;
+        	int BidBuffer;
+        	int roomsize = my_users.length;
+        	if(roomsize < 50) {
+            	//default settings if roomsize < 50
+            	IncrementBuffer = 10;
+            	BidBuffer = 20;
+        	} else { // every 50 viewers, the buffers increase depending on the size of the room increase
+        		// This is to stop the bot from spamming while people bid.
+            	IncrementBuffer = (roomsize / 50) * 10;
+            	BidBuffer = (roomsize / 50) * 20;
+        	}
         	int bidAmount;
         	if(scanner.hasNextInt()) {
         		bidAmount = scanner.nextInt();
-        		System.out.println("GOT THE AUCTION BIDDER: " + sender + " and bid amount of " + bidAmount);
-        		int bidderTankerPoints = my_botUsers.getMyCurrentPoints(sender.toLowerCase());
-            	if(bidderTankerPoints >= bidAmount && bidAmount > auctionHighBidAmount) {
-            		auctionHighBidder = sender;
-            		auctionHighBidAmount = bidAmount;
-            		sendMessage(channel,"NEW HIGH BIDDER IS: " + sender + " with bid amount of " + bidAmount + " " + my_points_name + "!");
+        		int bidderPoints = my_botUsers.getMyCurrentPoints(sender.toLowerCase());
+            	if(bidderPoints >= bidAmount && bidAmount > auctionHighBidAmount && !auctionHighBidder.equalsIgnoreCase(sender)) {
+            		if(bidAmount <= my_auction_incrementAmount + auctionHighBidAmount ) { //doesn't surpass the increment limit
+                    	if(BiddersMap.get(sender) == null) { // null must be a new bidder
+                    		auctionHighBidder = sender;
+                    		auctionHighBidAmount = bidAmount;
+                    		BiddersMap.put(sender, System.currentTimeMillis());
+                    		sendMessage(channel,"NEW HIGH BIDDER IS: " + sender + " with bid amount of " + bidAmount + " " + my_points_name + "!");
+                    	} else { //not a new bidder, lets check to be sure its been 10 seconds since the last bid
+                    		if(System.currentTimeMillis() - BiddersMap.get(sender) > 10000) {
+                    			Long currentTime = System.currentTimeMillis();
+                    			System.out.println(currentTime.toString());
+                        		auctionHighBidder = sender;
+                        		auctionHighBidAmount = bidAmount;
+                        		BiddersMap.remove(sender);
+                        		BiddersMap.put(sender, System.currentTimeMillis());
+                        		sendMessage(channel,"NEW HIGH BIDDER IS: " + sender + " with bid amount of " + bidAmount + " " + my_points_name + "!");
+                    		} else {
+                    			my_auction_SpamWarning += 1;
+                    		}
+                    	}
 
+            		} else { // Increment the message counter
+                		my_auction_Incrementbidwarnings += 1;
+                	}
             	} else {
-            		System.out.println("Invalid BID");
+            		my_auction_Pointbidwarnings += 1;
+            	}
+            	if(my_auction_Pointbidwarnings == BidBuffer) {
+            		sendMessage(channel,"Please remember that you cannot bid more " + my_points_name + " then you currently have or the bot will ignore your bid!" );
+            		my_auction_Pointbidwarnings = 0;
+            	}
+            	if(my_auction_Incrementbidwarnings == IncrementBuffer) {
+            		sendMessage(channel,"Please remember that you cannot bid more then " + my_auction_incrementAmount + " " + my_points_name + " over the current high bid (Current Max allowed bid: " + (my_auction_incrementAmount + auctionHighBidAmount) + ")." );
+            		my_auction_Incrementbidwarnings = 0;
+            	} 
+            	if(my_auction_SpamWarning == BidBuffer) {
+            		sendMessage(channel,"Please remember that the system will only accept a bid from any one user every 10+ seconds. To reduce spam, anything more and the user's attempt will be ignored. Please do not spam bid!");
+            		my_auction_SpamWarning = 0;
             	}
         	} else {
                 sendMessage(channel, sender + ": Missing <amount> arguments. Proper Command:  !bid <amount>");
@@ -406,8 +463,8 @@ public class MyBot extends PircBot implements Observer{
             sendMessage(channel, sender + ": " + my_points_name.toUpperCase() + " are accumulated while you are on watching the active stream on this channel. You will receive 1 point every 5 minutes of watching. You can use these points for certain events we hold.");
         }
         
-        if (command.equalsIgnoreCase("krashnburnz")) {
-            sendMessage(channel, sender + ": Creater of this bot. email --> krashnburnz@yahoo.com");
+        if (command.equalsIgnoreCase("!projecthome")) {
+            sendMessage(channel, sender + ": Project page for this bot software: https://code.google.com/p/twitch-bot-krashnburnz/");
         }
         
         // BEGIN LOTTERY SYSTEM
@@ -443,6 +500,8 @@ public class MyBot extends PircBot implements Observer{
 
         }
         // END OF LOTTERY SYSTEM
+        
+        scanner.close();
     }
     
     public void onUserList(String channel, User[] users) {
