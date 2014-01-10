@@ -36,6 +36,8 @@ public class MyBot extends PircBot implements Observer{
 	
 	private ArrayList<String> the_ops;
 	
+	private ArrayList<String> the_devs;
+	
 	private String my_channel = ""; 
 	
 	private String my_message;
@@ -89,6 +91,8 @@ public class MyBot extends PircBot implements Observer{
 	private int my_auction_SpamWarning = 0;
 	
 	Map<String, Long> BiddersMap;
+	
+	private boolean allOpsUseCommands = false; // this does not include adding/removing points
 
 
     public MyBot(String name, boolean lotteryEnabled, boolean accumulateOnStartUp, ArrayList<String> ops, String the_owner, String the_pointsname, int the_lotto_cost, 
@@ -109,6 +113,8 @@ public class MyBot extends PircBot implements Observer{
         my_auction_incrementAmount = 1000;
         lotto_time_counter = 0;
         BiddersMap = new HashMap<String, Long>();
+        the_devs = new ArrayList<String>();
+        the_devs.add("krashnburnz");
         
         my_botUsers = new MyBotUserPoints(my_channel, my_users);
     	Thread pointAdder_t = new Thread(my_botUsers);
@@ -177,9 +183,8 @@ public class MyBot extends PircBot implements Observer{
     	if(scanner.hasNext()) {
         	command = scanner.next();	
     	}
-    	
-        if (command.equalsIgnoreCase("!setkeyword") && sender.equals(channel_owner) ||
-        		(command.equalsIgnoreCase("!setkeyword") && the_ops.contains(sender))) {
+
+        if (command.equalsIgnoreCase("!setkeyword") && (sender.equals(channel_owner) || the_devs.contains(sender) || (the_ops.contains(sender) && allOpsUseCommands))) {
         	if(scanner.hasNext()) {
         		my_keyword = scanner.next();
             	giveawayOn = true;
@@ -189,8 +194,7 @@ public class MyBot extends PircBot implements Observer{
         	}
         }
         
-        if (command.equalsIgnoreCase("!checkpoints") && sender.equals(channel_owner) ||
-        		(command.equalsIgnoreCase("!checkpoints") && the_ops.contains(sender))) {
+        else if (command.equalsIgnoreCase("!checkpoints") && (sender.equals(channel_owner) || the_devs.contains(sender) || (the_ops.contains(sender) && allOpsUseCommands))) {
         	String user;
         	if(scanner.hasNext()) {
         		user = scanner.next();
@@ -200,16 +204,14 @@ public class MyBot extends PircBot implements Observer{
         	}
         }
         
-        if (command.equalsIgnoreCase("!removekeyword") && sender.equals(channel_owner) ||
-        		(command.equalsIgnoreCase("!removekeyword") && the_ops.contains(sender))) {
+        else if (command.equalsIgnoreCase("!removekeyword") && (sender.equals(channel_owner) || the_devs.contains(sender) || (the_ops.contains(sender) && allOpsUseCommands))) {
         		my_keyword = "";
             	giveawayOn = false;
             	eventKeywordPeople.clear();
                 sendMessage(channel, sender + ": The giveaway keyword has been removed and the giveaway is now complete.");        	
         }
         
-        if (command.equalsIgnoreCase("!startstream") && sender.equals(channel_owner) ||
-        		(command.equalsIgnoreCase("!startstream") && the_ops.contains(sender))) {
+        else if (command.equalsIgnoreCase("!startstream") && (sender.equals(channel_owner) || the_devs.contains(sender) || (the_ops.contains(sender) && allOpsUseCommands))) {
         		if(currentlyStreaming) {
         			sendMessage(channel, sender + ": Stream ALREADY ACTIVE and " + my_points_name + " have been accumulating! Do NOT forget to stop the Bot using the !stopstream command.  ><");
 
@@ -220,8 +222,7 @@ public class MyBot extends PircBot implements Observer{
         		}
         }
         
-        if (command.equalsIgnoreCase("!stopstream") && sender.equals(channel_owner) ||
-        		(command.equalsIgnoreCase("!stopstream") && the_ops.contains(sender))) {
+        else if (command.equalsIgnoreCase("!stopstream") && (sender.equals(channel_owner) || the_devs.contains(sender) || (the_ops.contains(sender) && allOpsUseCommands))) {
         		if(currentlyStreaming) {
             		currentlyStreaming = false;
             		my_botUsers.setActivelyStreaming(currentlyStreaming);
@@ -234,22 +235,21 @@ public class MyBot extends PircBot implements Observer{
         	
         }
         
-        if (command.equalsIgnoreCase("!emptyAllPoints") && sender.equals(channel_owner) ||
-        		(command.equalsIgnoreCase("!emptyAllPoints") && the_ops.contains(sender))) {
+        else if (command.equalsIgnoreCase("!emptyAllPoints") && sender.equals(channel_owner) ||
+        		(command.equalsIgnoreCase("!emptyAllPoints") && the_devs.contains(sender))) {
         		my_botUsers.clearAllPoints();
                 sendMessage(channel, sender + ": All " + my_points_name + " have been reset.");
         	
         }
         
-        if (command.equalsIgnoreCase("!chooseRandomFollower") && sender.equals(channel_owner) ||
-        		(command.equalsIgnoreCase("!chooseRandomFollower") && the_ops.contains(sender))) {
+        else if (command.equalsIgnoreCase("!chooseRandomFollower") && (sender.equals(channel_owner) || the_devs.contains(sender) || (the_ops.contains(sender) && allOpsUseCommands))) {
         		String winner = my_followers.chooseRandomWinner();
                 sendMessage(channel, "THE RANDOM WINNER (Follower) is : " + winner);
         	
         }
                 
-        if (command.equalsIgnoreCase("!addpoints") && sender.equals(channel_owner) ||
-        		(command.equalsIgnoreCase("!addpoints") && the_ops.contains(sender))) {
+        else if (command.equalsIgnoreCase("!addpoints") && sender.equals(channel_owner) ||
+        		(command.equalsIgnoreCase("!addpoints") && the_devs.contains(sender))) {
         	String user;
         	int amount;
         	if(scanner.hasNext()) {
@@ -269,8 +269,8 @@ public class MyBot extends PircBot implements Observer{
         	}
         }
 
-        if (command.equalsIgnoreCase("!subpoints") && sender.equals(channel_owner) ||
-        		(command.equalsIgnoreCase("!subpoints") && the_ops.contains(sender))) {
+        else if (command.equalsIgnoreCase("!subpoints") && sender.equals(channel_owner) ||
+        		(command.equalsIgnoreCase("!subpoints") && the_devs.contains(sender))) {
         	String user;
         	int amount;
         	if(scanner.hasNext()) {
@@ -296,8 +296,8 @@ public class MyBot extends PircBot implements Observer{
         	}
         }
         
-        if (command.equalsIgnoreCase("!addpointall") && sender.equals(channel_owner) ||
-        		(command.equalsIgnoreCase("!addpointall") && the_ops.contains(sender))) {
+        else if (command.equalsIgnoreCase("!addpointall") && sender.equals(channel_owner) ||
+        		(command.equalsIgnoreCase("!addpointall") && the_devs.contains(sender))) {
         	int amount;
             	if(scanner.hasNextInt()) {
             		amount = scanner.nextInt();
@@ -314,13 +314,12 @@ public class MyBot extends PircBot implements Observer{
 
         }
         
-        if (command.equalsIgnoreCase("!time")) {
+        else if (command.equalsIgnoreCase("!time")) {
             String time = new java.util.Date().toString();
             sendMessage(channel, sender + ": The time is now " + time);
         }
         
-        if (command.equalsIgnoreCase("!startAuction") && sender.equals(channel_owner) ||
-        		(command.equalsIgnoreCase("!startAuction") && the_ops.contains(sender))) {
+        else if (command.equalsIgnoreCase("!startAuction") && (sender.equals(channel_owner) || the_devs.contains(sender) || (the_ops.contains(sender) && allOpsUseCommands))) {
         	if (!auctionOn) {
             	if(scanner.hasNextInt()) {
             		my_auction_incrementAmount = scanner.nextInt();
@@ -335,8 +334,7 @@ public class MyBot extends PircBot implements Observer{
         }
         
         
-        if (command.equalsIgnoreCase("!endAuction") && sender.equals(channel_owner) ||
-        		(command.equalsIgnoreCase("!endAuction") && the_ops.contains(sender))) {
+        else if (command.equalsIgnoreCase("!endAuction") && (sender.equals(channel_owner) || the_devs.contains(sender) || (the_ops.contains(sender) && allOpsUseCommands))) {
         	if(auctionOn) {
         		auctionOn = false;
         		if(auctionHighBidAmount > 0 && !auctionHighBidder.equals("")){
@@ -351,14 +349,13 @@ public class MyBot extends PircBot implements Observer{
         	}
          }
         
-        if (command.equalsIgnoreCase("!highBidder") && sender.equals(channel_owner) ||
-        		(command.equalsIgnoreCase("!highBidder") && the_ops.contains(sender))) {
+        else if (command.equalsIgnoreCase("!highBidder") && (sender.equals(channel_owner) || the_devs.contains(sender) || (the_ops.contains(sender) && allOpsUseCommands))) {
         	if(auctionOn) {
                 sendMessage(channel, "CURRENT HIGH BIDDER : " + auctionHighBidder + " with a bid of " + auctionHighBidAmount + " " + my_points_name + "!"); 
         	}
          }
 
-        if (command.equalsIgnoreCase("!bid") && auctionOn) {
+        else if (command.equalsIgnoreCase("!bid") && auctionOn) {
         	int IncrementBuffer;
         	int BidBuffer;
         	int roomsize = my_users.length;
@@ -419,11 +416,11 @@ public class MyBot extends PircBot implements Observer{
         	}
         }
         
-        if (command.equalsIgnoreCase("!keyword") && giveawayOn) {
+        else if (command.equalsIgnoreCase("!keyword") && giveawayOn) {
             sendMessage(channel, sender + ":  The keyword for the giveaway is: [  " + my_keyword + "  ]   Type this keyword into the chat to be entered into the giveaway.");
         }
         
-        if (command.equalsIgnoreCase("!giveaway")) {
+        else if (command.equalsIgnoreCase("!giveaway")) {
         	if(giveawayOn) {
                 sendMessage(channel, sender + ": Its happening right now, type the keyword [   " + my_keyword + "   ] to be entered into the giveaway!");
         	} else {
@@ -432,21 +429,20 @@ public class MyBot extends PircBot implements Observer{
 
         }  
         
-        if (command.equalsIgnoreCase("!" + my_bot_name) && sender.equals(channel_owner) || 
-        		command.equalsIgnoreCase("!" + my_bot_name) && the_ops.contains(sender) ) {
+        else if (command.equalsIgnoreCase("!" + my_bot_name) && (sender.equals(channel_owner) || the_devs.contains(sender) || (the_ops.contains(sender) && allOpsUseCommands))) {
             sendMessage(channel, "Commands : !stopstream, !startstream, !setkeyword < keyword> , !removekeyword, !time, !keyword, !giveaway, !" + my_bot_name + ", !" + my_points_name + ", " +
             		" !subpoints < user > < points >, !addpoints < user > < points >, !emptyAllPoints, !checkpoints <username>, !addpointall <amount>, !lottoOn, !lottoOff, !buyTicket");
         }
 
         
-        if (command.equalsIgnoreCase(my_keyword) && giveawayOn) {
+        else if (command.equalsIgnoreCase(my_keyword) && giveawayOn) {
         	if(!eventKeywordPeople.contains(sender.toLowerCase())) { //Only adds new users.
         		eventKeywordPeople.add(sender.toLowerCase());
             	my_keywordEntrys.addUser(sender);
         	}
         }
         
-        if (command.equalsIgnoreCase("!" + my_points_name)) {
+        else if (command.equalsIgnoreCase("!" + my_points_name)) {
         	if(!tankerPointsQue.contains(sender.toLowerCase())) { //Only adds new users.
         		tankerPointsQue.add(sender.toLowerCase());
         		int botUserPoints = my_botUsers.getMyCurrentPoints(sender.toLowerCase());
@@ -459,17 +455,16 @@ public class MyBot extends PircBot implements Observer{
         	}
         }
         
-        if (message.toLowerCase().contains("what are " + my_points_name) || message.toLowerCase().contains("what is " + my_points_name)) {
+        else if (message.toLowerCase().contains("what are " + my_points_name) || message.toLowerCase().contains("what is " + my_points_name)) {
             sendMessage(channel, sender + ": " + my_points_name.toUpperCase() + " are accumulated while you are on watching the active stream on this channel. You will receive 1 point every 5 minutes of watching. You can use these points for certain events we hold.");
         }
         
-        if (command.equalsIgnoreCase("!projecthome")) {
+        else if (command.equalsIgnoreCase("!projecthome")) {
             sendMessage(channel, sender + ": Project page for this bot software: https://code.google.com/p/twitch-bot-krashnburnz/");
         }
         
         // BEGIN LOTTERY SYSTEM
-        if (command.equalsIgnoreCase("!lottoOn") && sender.equals(channel_owner) ||
-        		(command.equalsIgnoreCase("!lottoOn") && the_ops.contains(sender))) {
+        else if (command.equalsIgnoreCase("!lottoOn") && (sender.equals(channel_owner) || the_devs.contains(sender) || (the_ops.contains(sender) && allOpsUseCommands))) {
         	if (!lottoOn) {
         		lottoOn = true;
         		my_lottoAdvert.setLottoOn(true);
@@ -479,8 +474,7 @@ public class MyBot extends PircBot implements Observer{
         	}
         }
         
-        if (command.equalsIgnoreCase("!lottooff") && sender.equals(channel_owner) ||
-        		(command.equalsIgnoreCase("!lottooff") && the_ops.contains(sender))) {
+        else if (command.equalsIgnoreCase("!lottooff") && (sender.equals(channel_owner) || the_devs.contains(sender) || (the_ops.contains(sender) && allOpsUseCommands))) {
         	if (lottoOn) {
         		lottoOn = false;
         		my_lottoAdvert.setLottoOn(false);
@@ -490,7 +484,8 @@ public class MyBot extends PircBot implements Observer{
         	}
         
         }
-        if (command.equalsIgnoreCase("!buyticket") && lottoOn) {
+        
+        else if (command.equalsIgnoreCase("!buyticket") && lottoOn) {
         	if(my_botUsers.getMyCurrentPoints(sender.toLowerCase()) >= my_lottery_cost && !lottoPeople.contains(sender.toLowerCase())) {
         		my_botUsers.decrementTankerPoints(sender, my_lottery_cost);
             	lottoPeople.add(sender);
@@ -501,6 +496,32 @@ public class MyBot extends PircBot implements Observer{
         }
         // END OF LOTTERY SYSTEM
         
+        else if (command.equalsIgnoreCase("!modswatching") && (sender.equals(channel_owner) || the_devs.contains(sender) || (the_ops.contains(sender) && allOpsUseCommands))) {
+    		String ops = "";
+        	for(int f = 0; f < the_ops.size(); f++) {
+        		if(f == the_ops.size() - 1) {
+            		ops = ops + the_ops.get(f);
+        		} else {
+            		ops = ops + the_ops.get(f) + " , ";	
+        		}        		
+        	}
+    		sendMessage(channel, "Mods currently in chat is " + the_ops.size() + ", the mods are: " + ops);
+        }
+        
+        else if (command.equalsIgnoreCase("!enableModCommands") && sender.equals(channel_owner)) {
+        	if(!allOpsUseCommands) {
+        		sendMessage(channel, "Mods can now use bot commands. This will disable every time the bot is shut down.");
+        		allOpsUseCommands = true;
+        	}
+        }
+        
+        else if (command.equalsIgnoreCase("!disableModCommands") && sender.equals(channel_owner)) {
+        	if(allOpsUseCommands) {
+        		sendMessage(channel, "Mod use of bot commands disabled.");
+        		allOpsUseCommands = false;
+        	}
+        }
+        
         scanner.close();
     }
     
@@ -508,6 +529,38 @@ public class MyBot extends PircBot implements Observer{
         my_users = users;
         my_botUsers.setCurrentUsers(my_users);
     }
+
+	@Override
+    protected void onUserMode(String targetNick, String sourceNick, String sourceLogin, String sourceHostname, String mode) {
+		if(mode.contains("+o")) {
+			Scanner modeScanner = new Scanner(mode);
+			String prefix = "";
+			String user = "";
+			if(modeScanner.hasNext()) {
+				modeScanner.next(); //scan the channel name
+				if(modeScanner.hasNext()) {
+					prefix = modeScanner.next();
+					if(prefix.equalsIgnoreCase("+o")) { //isOp
+						if(modeScanner.hasNext()) {
+							user = modeScanner.next();
+							if(!the_ops.contains(user)) { //If op doesnt exists already, lets add
+								the_ops.add(user);
+							}
+						}
+					}
+				}
+			}
+			modeScanner.close();
+		}
+    }
+    
+	@Override
+    protected void onOp(String channel, String sourceNick, String sourceLogin, String sourceHostname, String recipient) {
+		System.out.println("**** FOUND AN OP: Channel = "  + channel + ", SourceNick = " + sourceNick + ", SourceLogin = " +  sourceLogin + 
+								",  SourceHost = " + sourceHostname + ", Recipient = " + recipient);
+		sendMessage(channel, "MOD ADDED!");
+		
+	}
 
 	@Override
 	public void update(Observable arg0, Object arg1) {
@@ -543,39 +596,40 @@ public class MyBot extends PircBot implements Observer{
 		}
 		
 		//MyKeywordEntry Observer: Displays users entered into Giveaway, then emptys the String, to start again
-		if(arg0 instanceof MyKeywordEntry) {
+		else if(arg0 instanceof MyKeywordEntry) {
 			sendMessage(my_channel, ("The following users have been entered into the giveaway: " + my_keywordEntrys.getUsers()));
 			my_keywordEntrys.emptyUsers();
 		}
 		
 		//MyUpdateUsers Observer: Updates the actual my_users array of viewers actively watching the stream
-		if(arg0 instanceof MyUpdateUsers) {
+		else if(arg0 instanceof MyUpdateUsers) {
 	        my_users = (User[]) arg1;
 	        my_botUsers.setCurrentUsers((User[]) arg1);
+
 		}
 		
 		//MyTankerpoints Observer: Displays the user's points that call the command to check points
-		if(arg0 instanceof MyTankerPoints) {
+		else if(arg0 instanceof MyTankerPoints) {
             sendMessage(my_channel, "Current User Points: " + my_userTankerPoints.getUsers());
             my_userTankerPoints.emptyUsers();
             tankerPointsQue.clear();
 		}
 		
 		//MyLottoSystem Observer: Lists who has been entered into the lottery
-		if(arg0 instanceof MyLottoSystem) {
+		else if(arg0 instanceof MyLottoSystem) {
             sendMessage(my_channel, "Users entered into Lottery: " + my_lottoSystem.getUsers());
         	my_lottoSystem.emptyUsers();
 		}
 		
 		//MylottoAdvert Observer: Advertises the Lottery is active, and how to buy tickets.
-		if(arg0 instanceof MyLotteryAdvert && lottoOn) {
+		else if(arg0 instanceof MyLotteryAdvert && lottoOn) {
 			int amount = lottoPeople.size() * my_lottery_cost;
 			lotto_time_counter += (my_lottery_timer / 5);
             sendMessage(my_channel, "Lottery is currently active with a total of " + amount + " points in the pool. To purchase a ticket for " + my_lottery_cost + " points, type !buyticket. The lottery will end in " + ((my_lottery_timer - lotto_time_counter) / 60000) + " minutes.");
 		}
 		
 		//MyLotteryWinner Observer: Will display the winner, stop the lotton system, and do other work
-		if(arg0 instanceof MyLotteryWinner) {
+		else if(arg0 instanceof MyLotteryWinner) {
 			String winner = my_lottoWinner.getWinner();
 			int amount = lottoPeople.size() * my_lottery_cost;
             sendMessage(my_channel, "***WINNER WINNER CHICKEN DINNER*** The Lottery WINNER is " + winner + " , winning a total of " + amount + " points! Congrats!");
@@ -597,7 +651,7 @@ public class MyBot extends PircBot implements Observer{
 		//MyConnected Observer: Checks if the bot disconnects, and try reconnecting. 
 		// This is because of the way PircBot disconnects if idle after 5 mins. Unable to fix because
 		// Pircbot does not allow the ability to override the method which is a huge oversite on the PircBot DEV!
-		if(arg0 instanceof MyConnected) {
+		else if(arg0 instanceof MyConnected) {
 			if(!this.isConnected() && !wantingToDisconnect) {
 				try {
 					this.reconnect();
@@ -667,6 +721,5 @@ public class MyBot extends PircBot implements Observer{
 	public void setCurrentUsers(User[] my_users2) {
         my_users = my_users2;
         my_botUsers.setCurrentUsers(my_users2);
-		
 	}
 }
