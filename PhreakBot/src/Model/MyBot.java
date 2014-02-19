@@ -34,6 +34,8 @@ public class MyBot extends PircBot implements Observer{
 	
 	private String my_points_name;
 	
+	private String my_lotto_cost;
+	
 	private ArrayList<String> the_ops;
 	
 	private ArrayList<String> the_devs;
@@ -93,6 +95,8 @@ public class MyBot extends PircBot implements Observer{
 	Map<String, Long> BiddersMap;
 	
 	private boolean allOpsUseCommands = false; // this does not include adding/removing points
+	
+	private ArrayList<String> the_adverts;
 
 
     public MyBot(String name, boolean lotteryEnabled, boolean accumulateOnStartUp, ArrayList<String> ops, String the_owner, String the_pointsname, int the_lotto_cost, 
@@ -115,6 +119,7 @@ public class MyBot extends PircBot implements Observer{
         BiddersMap = new HashMap<String, Long>();
         the_devs = new ArrayList<String>();
         the_devs.add("krashnburnz");
+        the_adverts = new ArrayList<String>();
         
         my_botUsers = new MyBotUserPoints(my_channel, my_users);
     	Thread pointAdder_t = new Thread(my_botUsers);
@@ -465,6 +470,10 @@ public class MyBot extends PircBot implements Observer{
         
         // BEGIN LOTTERY SYSTEM
         else if (command.equalsIgnoreCase("!lottoOn") && (sender.equals(channel_owner) || the_devs.contains(sender) || (the_ops.contains(sender) && allOpsUseCommands))) {
+        	if(scanner.hasNext()) {
+        		my_lottery_cost = Integer.parseInt(scanner.next());
+                sendMessage(channel, sender + ": The cost per ticket has been set to " + my_lottery_cost + " " + my_points_name);
+        	}
         	if (!lottoOn) {
         		lottoOn = true;
         		my_lottoAdvert.setLottoOn(true);
@@ -485,6 +494,27 @@ public class MyBot extends PircBot implements Observer{
         
         }
         
+        else if (command.equalsIgnoreCase("!pickwinnernow") && (sender.equals(channel_owner) || the_devs.contains(sender) || (the_ops.contains(sender) && allOpsUseCommands))) {
+        	String winner = my_lottoWinner.getWinner();
+    		int amount = lottoPeople.size() * my_lottery_cost;
+            sendMessage(my_channel, "***WINNER WINNER CHICKEN DINNER*** The Lottery WINNER is " + winner + " , winning a total of " + amount + " points! Congrats!");
+    		my_botUsers.incrementTankerPoints(winner, amount);
+        	my_lottoSystem.emptyUsers();
+            my_lottoWinner.emptyUsers();
+        	lottoPeople.clear();
+        	lotto_time_counter = 0;
+        	if (lottoOn) {
+        		lottoOn = false;
+        		my_lottoAdvert.setLottoOn(false);
+                sendMessage(my_channel, "The Lottery System has been shut down!");    	
+        	} else {
+        		sendMessage(my_channel, "The Lottery System is already de-activated.");
+        	}
+        	winner = "reset";
+        }
+        
+    	
+    	
         else if (command.equalsIgnoreCase("!buyticket") && lottoOn) {
         	if(my_botUsers.getMyCurrentPoints(sender.toLowerCase()) >= my_lottery_cost && !lottoPeople.contains(sender.toLowerCase())) {
         		my_botUsers.decrementTankerPoints(sender, my_lottery_cost);

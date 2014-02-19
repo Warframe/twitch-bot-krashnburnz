@@ -238,11 +238,11 @@ public class MyBotLogin extends JPanel implements Runnable{
 		    	  if (the_event.getSource() == btnOathKey) {
 		    		  String botName = getBotName();
 		    		  if(botName.isEmpty()) {
-		    			  JOptionPane.showMessageDialog(null, "You can get your oath key from www.twitch.tv/YourBotNameHere/?chat_debug=true \n" +
+		    			  JOptionPane.showMessageDialog(null, "You can get your oath key from http://www.twitchapps.com/tmi/ \n" +
 		    					  								"\n" + 
 		    					  								"Please be sure you log into twitch with your BOT INFORMATION to get your bot's oathkey!");
 		    		  } else {
-		    			  JOptionPane.showMessageDialog(null, "You can get your oath key from www.twitch.tv/"+botName+"/?chat_debug=true\n" +
+		    			  JOptionPane.showMessageDialog(null, "You can get your oath key from http://www.twitchapps.com/tmi/ \n" +
 		    					  								"\n" + 
 		    					  								"Please be sure you log into twitch with your BOT INFORMATION to get your bot's oathkey!");
 		    		  }
