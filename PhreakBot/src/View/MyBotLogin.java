@@ -214,7 +214,12 @@ public class MyBotLogin extends JPanel implements Runnable{
 		    		  JOptionPane.showMessageDialog(null, "Required information missing! Please type a Port for Twitch."); 
 		    	  } else if(pointName.isEmpty()) {
 		    		  JOptionPane.showMessageDialog(null, "Required information missing! Please type the name you want your channel points to be called."); 
-		    	  } else {
+		    		  
+		    	  }  else if(pointName.equalsIgnoreCase("points") || pointName.equalsIgnoreCase("point")) {
+		    		  JOptionPane.showMessageDialog(null, "Please call the points something other then 'point' or 'points'. \n" +
+		    		  									"This could cause confusion when messages about 'points' are displayed!"); 
+		    		  
+		    	  }else {
 		    		  String [] myArgs = new String [7];
 		    		  myArgs[0] = botName;
 		    		  myArgs[1] = channelName;
@@ -341,11 +346,11 @@ public class MyBotLogin extends JPanel implements Runnable{
 	
 	//getters
 	public String getChannelName() {
-		return txtChannelName.getText();
+		return txtChannelName.getText().toLowerCase();
 	}
 
 	public String getBotName() {
-		return txtBotname.getText();
+		return txtBotname.getText().toLowerCase();
 	}
 	
 	public String getBotPassword() {
@@ -361,7 +366,7 @@ public class MyBotLogin extends JPanel implements Runnable{
 	}
 	
 	public String getPointName() {
-		return txtPointName.getText();
+		return txtPointName.getText().toLowerCase();
 	}
 	
 	public MyBotMain getBotMain() {
