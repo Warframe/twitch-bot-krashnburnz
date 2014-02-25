@@ -7,11 +7,17 @@ import java.io.ObjectOutputStream;
 import java.io.Serializable;
 import java.sql.Time;
 import java.sql.Timestamp;
+import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.Date;
 import java.util.GregorianCalendar;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.LinkedHashMap;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Observable;
@@ -33,6 +39,7 @@ public class MyBotUserPoints extends Observable implements Runnable, Serializabl
 	String my_channel;
 	User[] my_Users;
 	int my_runCount;
+	List<String> sortedPointsList;
 	
 	private boolean lottoOn=false;
 	
@@ -78,6 +85,7 @@ public class MyBotUserPoints extends Observable implements Runnable, Serializabl
 	        	}
 	        	my_runCount++;
 	        	saveFile(UsersMap, "User_Map_File");
+	        	updateRankedList();
 	        	setChanged();
 	        	notifyObservers();
 	        	try {
@@ -279,5 +287,52 @@ public class MyBotUserPoints extends Observable implements Runnable, Serializabl
 		saveFile(UsersMap, "User_Map_File_backup_" + timeStamp);
 	}
 	
+	private Map sortByValue(Map map) {
+		List list = new LinkedList(map.entrySet());
+	     Collections.sort(list, new Comparator() {
+	          public int compare(Object o1, Object o2) {
+	               return ((Comparable) ((Map.Entry) (o1)).getValue())
+	              .compareTo(((Map.Entry) (o2)).getValue());
+	          }
+	     });
+
+	    Map result = new LinkedHashMap();
+	    for (Iterator it = list.iterator(); it.hasNext();) {
+	        Map.Entry entry = (Map.Entry)it.next();
+	        result.put(entry.getKey(), entry.getValue());
+	    }
+	    return result;
+	} 
+	
+	public void updateRankedList() {
+		Set userList = sortByValue(UsersMap).keySet();
+    	Iterator<User> it = userList.iterator();
+    	sortedPointsList = new ArrayList<String>();
+    	while(it.hasNext()) {
+    		String userName = it.next().getNick().toLowerCase();
+    		sortedPointsList.add(userName);
+    		Collections.reverse(sortedPointsList);
+    	}
+	}
+	public int getRank(String user) {
+		int answer = -1;
+		if(sortedPointsList != null) {
+			if(sortedPointsList.contains(user)) {
+				answer = sortedPointsList.indexOf(user)+1; //because of 0 indexing
+			} else {
+				answer = 0;
+			}
+		}
+		return answer;	
+	}
+	
+	public int getTotalUserCount() {
+		int answer = -1;
+		if(sortedPointsList != null) {
+			answer = sortedPointsList.size();
+		}
+		return answer;
+		
+	}
 }
 	

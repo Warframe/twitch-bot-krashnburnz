@@ -97,6 +97,12 @@ public class MyBot extends PircBot implements Observer{
 	private boolean allOpsUseCommands = false; // this does not include adding/removing points
 	
 	private ArrayList<String> the_adverts;
+	
+	private MyVoteSystem vote_system;
+	
+	private boolean isVoteActive = false;
+	
+	ArrayList<String> theoptions = new ArrayList<String>();;
 
 
     public MyBot(String name, boolean lotteryEnabled, boolean accumulateOnStartUp, ArrayList<String> ops, String the_owner, String the_pointsname, int the_lotto_cost, 
@@ -203,7 +209,8 @@ public class MyBot extends PircBot implements Observer{
         	String user;
         	if(scanner.hasNext()) {
         		user = scanner.next();
-                sendMessage(channel, user +"'s current " + my_points_name + " are: " + my_botUsers.getMyCurrentPoints(user));
+        		int rank = my_botUsers.getRank(user);
+                sendMessage(channel, user +"'s current " + my_points_name + " are: " + my_botUsers.getMyCurrentPoints(user) + " with a rank of "+ rank + " out of " + my_botUsers.getTotalUserCount());
         	} else {
                 sendMessage(channel, sender + ": Lack of arguments to get user's points.  Proper format: !checkpoints <username>");
         	}
@@ -244,6 +251,7 @@ public class MyBot extends PircBot implements Observer{
         		(command.equalsIgnoreCase("!emptyAllPoints") && the_devs.contains(sender))) {
         		my_botUsers.clearAllPoints();
                 sendMessage(channel, sender + ": All " + my_points_name + " have been reset.");
+                my_botUsers.updateRankedList();
         	
         }
         
@@ -265,6 +273,7 @@ public class MyBot extends PircBot implements Observer{
             		System.out.println("GOT THE AMOUNT TO ADD: " + amount);
             		my_botUsers.incrementTankerPoints(user, amount);
                     sendMessage(channel, sender + ": " + amount + " " + my_points_name + " added to " + user);
+                    my_botUsers.updateRankedList();
                 	
             	} else {
                     sendMessage(channel, sender + ": Missing <amount> argument. Proper Command:  !addpoints <name> <amount>");
@@ -290,6 +299,7 @@ public class MyBot extends PircBot implements Observer{
             		} else {
                 		my_botUsers.decrementTankerPoints(user, amount);
                         sendMessage(channel, sender + ": " + amount + " " + my_points_name + " removed from " + user + " leaving a total of " + my_botUsers.getMyCurrentPoints(user) + " " + my_points_name + " remaining.");
+                        my_botUsers.updateRankedList();
             		}
 
                 	
@@ -311,6 +321,7 @@ public class MyBot extends PircBot implements Observer{
                 		String this_user = my_users[i].getNick();
                 		my_botUsers.incrementTankerPoints(this_user, amount);
                 	}
+                	my_botUsers.updateRankedList();
                     sendMessage(channel, sender + ": " + amount + " " + my_points_name + " added to every viewer currently watching!");
                 	
             	} else {
@@ -552,6 +563,116 @@ public class MyBot extends PircBot implements Observer{
         	}
         }
         
+        else if (command.equalsIgnoreCase("!rank")) {
+        	int rank = my_botUsers.getRank(sender);
+        	if(rank == 0){
+    			sendMessage(my_channel, sender + " : Sorry but you do not exist in the ranking list yet. Please try again in 5 minutes!");
+        	} else if(rank == -1) {
+    			sendMessage(my_channel, sender + " : The rank list is null. Please try again later!");
+        	} else {
+        		sendMessage(my_channel, sender + " : You are currently rank " + rank + " out of " + my_botUsers.getTotalUserCount());           	
+        	}
+            	
+        }
+        
+        else if (command.equalsIgnoreCase("!startvote") && (sender.equals(channel_owner) || the_devs.contains(sender) || (the_ops.contains(sender) && allOpsUseCommands))) {
+        	String currentOption = "";
+        	boolean isFirstWord = true;
+        	if(!scanner.hasNext()) {
+        		sendMessage(my_channel, sender + " : Missing arguments for options. Each option must be proceeded by a dash. Example: startvote -Yes -No -Maybe");
+        	} else {
+        		if(!isVoteActive) {
+            		while(scanner.hasNext()){
+                		String word = scanner.next();
+                		if(isFirstWord) {
+                			if(!word.contains("-")) {
+                				sendMessage(my_channel, sender + " : Missing arguments for options. Each option must be proceeded by a dash. Example: startvote -Play Dayz all night -Play BF4 for a few hours");
+                			} else {
+                				currentOption = word.substring(1);
+                				if(!scanner.hasNext()) {
+                					theoptions.add(currentOption.toLowerCase());
+                				}
+                				isFirstWord = false;
+                			}
+                		} else {
+                			if(!word.contains("-")) {
+                				currentOption = currentOption + " " + word;
+                				if(!scanner.hasNext()) {
+                					theoptions.add(currentOption.toLowerCase());
+                				}
+                			} else {
+                				theoptions.add(currentOption.toLowerCase());
+                				currentOption = word.substring(1);
+                				if(!scanner.hasNext()) {
+                					theoptions.add(currentOption.toLowerCase());
+                				}
+                			}
+                		}
+                	}
+                	if(!isVoteActive) {
+                		if(theoptions.size() > 0) {
+                			vote_system = new MyVoteSystem(theoptions);
+                    		String longOptions = "";
+                    		for(int i = 0; i < theoptions.size(); i++) {
+                    			longOptions = longOptions+ "    " +  (i+1) +". " +theoptions.get(i);
+                    		}
+                    		sendMessage(my_channel, sender + " : The vote systen has been activated with " + theoptions.size() + " options. The Options:  " +longOptions +". Please type !vote #  to cast your vote. Example:  !vote 1");
+                    		isVoteActive = true;
+                		}
+                	} else {
+                		sendMessage(my_channel, sender + " : There is already a vote currently active. Please end the current Vote before attempting to start a new one.");
+                	}
+        		} else {
+        			sendMessage(my_channel, sender + " : There is already a vote currently active. Please end the current Vote before attempting to start a new one.");
+        		}
+        		
+        	}
+        	
+        }
+        
+        else if (command.equalsIgnoreCase("!endvote") && (sender.equals(channel_owner) || the_devs.contains(sender) || (the_ops.contains(sender) && allOpsUseCommands))) {
+        	if(isVoteActive) {
+        		String theWinner = vote_system.endVote();
+        		int theindex = 0;
+        		if(theoptions.contains(theWinner)) {
+        			theindex = theoptions.indexOf(theWinner);
+        		}
+        		sendMessage(my_channel, sender + " : The winning choice for the vote was #" + (theindex + 1) + " - " + theWinner + " , With a total of " + vote_system.getMax() + " votes!");
+            	isVoteActive = false;
+            	vote_system.clearMax();
+            	theoptions.clear();
+        	} else {
+        		sendMessage(my_channel, sender + " : The vote system is not currently activated. Type !startvote <arg1> <arg2> ... <arg N>          where each arg must begin with a dash -   Example: !startvote -We like turtles -We hate turtles");
+        	}
+        	
+        }
+        
+        else if (command.equalsIgnoreCase("!getvoteoptions")) {
+        	if(theoptions.size() > 0) {
+        		String longOptions = "";
+        		for(int i = 0; i < theoptions.size(); i++) {
+        			longOptions = longOptions+ "    " +  (i+1) +". " +theoptions.get(i);
+        		}
+        		sendMessage(my_channel, sender + " : There are currently " + theoptions.size() + " options to vote for. The choices are:  " +longOptions );
+    		}
+        }
+        
+        else if (command.equalsIgnoreCase("!vote")) {
+        	int vote;
+        	int sizeOptions = theoptions.size();
+        	if(scanner.hasNextInt()) {
+        		vote = scanner.nextInt();
+        		if(sizeOptions > 0 && vote <= sizeOptions) {
+        			vote_system.addVote(vote, sender);
+        		}
+        	}
+        }
+        
+        else if (command.equalsIgnoreCase("!myvote")) {
+        	int chosen = vote_system.getMyChosenOption(sender);
+        	sendMessage(my_channel, sender + " : You have chosen choice #" + chosen + " - " + theoptions.get(chosen-1));
+        }
+        
         scanner.close();
     }
     
@@ -635,7 +756,6 @@ public class MyBot extends PircBot implements Observer{
 		else if(arg0 instanceof MyUpdateUsers) {
 	        my_users = (User[]) arg1;
 	        my_botUsers.setCurrentUsers((User[]) arg1);
-
 		}
 		
 		//MyTankerpoints Observer: Displays the user's points that call the command to check points
