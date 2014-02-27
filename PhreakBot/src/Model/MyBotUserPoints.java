@@ -1,9 +1,16 @@
 package Model;
+import java.io.BufferedReader;
+import java.io.BufferedWriter;
+import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
+import java.io.FileReader;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
+import java.io.PrintWriter;
 import java.io.Serializable;
 import java.sql.Time;
 import java.sql.Timestamp;
@@ -19,6 +26,7 @@ import java.util.LinkedHashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Scanner;
 import java.util.Map.Entry;
 import java.util.Observable;
 import java.util.Set;
@@ -281,7 +289,7 @@ public class MyBotUserPoints extends Observable implements Runnable, Serializabl
 
 	public void saveBackupFile() {
         Calendar c = Calendar.getInstance();
-        String timeStamp = "_" +c.get(Calendar.MONTH) + "_" + c.get(Calendar.DAY_OF_MONTH)+ "_" + c.get(Calendar.YEAR) + "_"
+        String timeStamp = "_" + (c.get(Calendar.MONTH ) + 1) + "_" + c.get(Calendar.DAY_OF_MONTH)+ "_" + c.get(Calendar.YEAR) + "_"
         		+ "_" +   c.get(Calendar.HOUR) + c.get(Calendar.MINUTE)+ c.get(Calendar.SECOND);
 		System.out.println("Saving User Map to file name --> User_Map_File_backup_" + timeStamp);
 		saveFile(UsersMap, "User_Map_File_backup_" + timeStamp);
@@ -333,6 +341,89 @@ public class MyBotUserPoints extends Observable implements Runnable, Serializabl
 		}
 		return answer;
 		
+	}
+
+	public boolean importUserMap(File file) {
+		Map<User, Integer> tempUserMap = new HashMap<User, Integer>();
+		BufferedReader reader = null;
+		try {
+			reader = new BufferedReader(new FileReader(file));
+		} catch (FileNotFoundException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		String line = null;
+		String username;
+		int points;
+		try {
+			while ((line = reader.readLine()) != null) {
+				Scanner sc = new Scanner(line);
+				if(sc.hasNext()) {
+					username = sc.next();
+					if(sc.hasNextInt()) {
+						points = sc.nextInt();
+						saveBackupFile(); //Auto Save of a backup
+						tempUserMap.put(new User("", username.toLowerCase()), points);
+						saveFile(tempUserMap, "User_Map_File"); //Save new map to file overwriting original
+						updateUserMap(); //Now update everything with new map
+						updateRankedList(); //Update the ranked list with the new map
+					}
+				}
+				sc.close();
+			}
+			reader.close();
+			
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		if(!tempUserMap.isEmpty()) {
+			this.setUserMap(tempUserMap);
+			//custom title, custom icon
+			return true;
+		} else {
+			System.out.println("The temp User map was empty. Import of User Map was not successful!");
+			return false;
+		}
+		
+	}
+
+	public boolean exportUserMap() {
+		@SuppressWarnings("rawtypes")
+		Iterator it = this.getUserMap().entrySet().iterator();
+	    int count = 1;
+	    ArrayList<String> list = new ArrayList<String>();
+	    while (it.hasNext()) {
+	        @SuppressWarnings("rawtypes")
+			Map.Entry pairs = (Map.Entry)it.next();
+	        list.add(pairs.getKey() + " " + pairs.getValue());
+	        it.remove(); // avoids a ConcurrentModificationException
+	        count++;
+	    }
+	    System.out.println("Size of List" + list.size());
+	    
+	    FileWriter file = null;
+		try {
+			Calendar c = Calendar.getInstance();
+			String timeStamp = "_" + (c.get(Calendar.MONTH ) + 1) + "_" + c.get(Calendar.DAY_OF_MONTH)+ "_" + c.get(Calendar.YEAR) + "_"
+	        		+ "_" +   c.get(Calendar.HOUR) + c.get(Calendar.MINUTE)+ c.get(Calendar.SECOND);
+			file = new FileWriter("export_user_points_" + timeStamp + ".txt");
+			BufferedWriter buff = new BufferedWriter(file);
+		    PrintWriter out = new PrintWriter(buff);
+
+		    for( int x = 0; x < list.size(); x++)
+		    {
+		    out.println(list.get(x));
+		    }
+
+		    out.close();
+			return true;
+		} catch (IOException e) {
+			
+			e.printStackTrace();
+			return false;
+		}
+	    
 	}
 }
 	

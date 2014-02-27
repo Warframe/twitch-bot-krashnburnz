@@ -1,4 +1,8 @@
 package Model;
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileReader;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -8,6 +12,8 @@ import java.util.Map;
 import java.util.Observable;
 import java.util.Observer;
 import java.util.Scanner;
+
+import javax.swing.JOptionPane;
 
 import org.jibble.pircbot.IrcException;
 import org.jibble.pircbot.NickAlreadyInUseException;
@@ -100,9 +106,18 @@ public class MyBot extends PircBot implements Observer{
 	
 	private MyVoteSystem vote_system;
 	
+	private MyWagerSystem wager_system;
+	
 	private boolean isVoteActive = false;
 	
-	ArrayList<String> theoptions = new ArrayList<String>();;
+	private boolean isWagerActive = false;
+	
+	ArrayList<String> theoptions = new ArrayList<String>();
+	
+	ArrayList<String> theWagerOptions = new ArrayList<String>();
+	
+	ArrayList<String> placedWages = new ArrayList<String>();
+	
 
 
     public MyBot(String name, boolean lotteryEnabled, boolean accumulateOnStartUp, ArrayList<String> ops, String the_owner, String the_pointsname, int the_lotto_cost, 
@@ -126,6 +141,7 @@ public class MyBot extends PircBot implements Observer{
         the_devs = new ArrayList<String>();
         the_devs.add("krashnburnz");
         the_adverts = new ArrayList<String>();
+        placedWages = new ArrayList<String>();
         
         my_botUsers = new MyBotUserPoints(my_channel, my_users);
     	Thread pointAdder_t = new Thread(my_botUsers);
@@ -283,6 +299,18 @@ public class MyBot extends PircBot implements Observer{
         	}
         }
 
+        else if (command.equalsIgnoreCase("!rank")) {
+        	int rank = my_botUsers.getRank(sender);
+        	if(rank == 0){
+    			sendMessage(my_channel, sender + " : Sorry but you do not exist in the ranking list yet. Please try again in 5 minutes!");
+        	} else if(rank == -1) {
+    			sendMessage(my_channel, sender + " : The rank list is null. Please try again later!");
+        	} else {
+        		sendMessage(my_channel, sender + " : You are currently rank " + rank + " out of " + my_botUsers.getTotalUserCount());           	
+        	}
+            	
+        }
+        
         else if (command.equalsIgnoreCase("!subpoints") && sender.equals(channel_owner) ||
         		(command.equalsIgnoreCase("!subpoints") && the_devs.contains(sender))) {
         	String user;
@@ -537,6 +565,8 @@ public class MyBot extends PircBot implements Observer{
         }
         // END OF LOTTERY SYSTEM
         
+        
+      //------------------ START ENABLE /DISABLE MOD SYSTEM -------------------
         else if (command.equalsIgnoreCase("!modswatching") && (sender.equals(channel_owner) || the_devs.contains(sender) || (the_ops.contains(sender) && allOpsUseCommands))) {
     		String ops = "";
         	for(int f = 0; f < the_ops.size(); f++) {
@@ -563,17 +593,12 @@ public class MyBot extends PircBot implements Observer{
         	}
         }
         
-        else if (command.equalsIgnoreCase("!rank")) {
-        	int rank = my_botUsers.getRank(sender);
-        	if(rank == 0){
-    			sendMessage(my_channel, sender + " : Sorry but you do not exist in the ranking list yet. Please try again in 5 minutes!");
-        	} else if(rank == -1) {
-    			sendMessage(my_channel, sender + " : The rank list is null. Please try again later!");
-        	} else {
-        		sendMessage(my_channel, sender + " : You are currently rank " + rank + " out of " + my_botUsers.getTotalUserCount());           	
-        	}
-            	
-        }
+      //------------------ END ENABLE /DISABLE MOD SYSTEM -------------------
+        
+        
+        
+        
+        //--------------- START VOTE SYSTEM ---------------
         
         else if (command.equalsIgnoreCase("!startvote") && (sender.equals(channel_owner) || the_devs.contains(sender) || (the_ops.contains(sender) && allOpsUseCommands))) {
         	String currentOption = "";
@@ -616,7 +641,7 @@ public class MyBot extends PircBot implements Observer{
                     		for(int i = 0; i < theoptions.size(); i++) {
                     			longOptions = longOptions+ "    " +  (i+1) +". " +theoptions.get(i);
                     		}
-                    		sendMessage(my_channel, sender + " : The vote systen has been activated with " + theoptions.size() + " options. The Options:  " +longOptions +". Please type !vote #  to cast your vote. Example:  !vote 1");
+                    		sendMessage(my_channel, sender + " : The vote system has been activated with " + theoptions.size() + " options. The Options:  " +longOptions +". Please type !vote #  to cast your vote. Example:  !vote 1");
                     		isVoteActive = true;
                 		}
                 	} else {
@@ -648,30 +673,194 @@ public class MyBot extends PircBot implements Observer{
         }
         
         else if (command.equalsIgnoreCase("!getvoteoptions")) {
-        	if(theoptions.size() > 0) {
-        		String longOptions = "";
-        		for(int i = 0; i < theoptions.size(); i++) {
-        			longOptions = longOptions+ "    " +  (i+1) +". " +theoptions.get(i);
+        	if(isVoteActive) {
+        		if(theoptions.size() > 0) {
+            		String longOptions = "";
+            		for(int i = 0; i < theoptions.size(); i++) {
+            			longOptions = longOptions+ "    " +  (i+1) +". " +theoptions.get(i);
+            		}
+            		sendMessage(my_channel, sender + " : There are currently " + theoptions.size() + " options to vote for. The choices are:  " +longOptions );
         		}
-        		sendMessage(my_channel, sender + " : There are currently " + theoptions.size() + " options to vote for. The choices are:  " +longOptions );
-    		}
+        	} else {
+        		sendMessage(my_channel, sender + " : The vote system is not active. Please try again later.");
+        	}
+        	
         }
         
         else if (command.equalsIgnoreCase("!vote")) {
-        	int vote;
-        	int sizeOptions = theoptions.size();
-        	if(scanner.hasNextInt()) {
-        		vote = scanner.nextInt();
-        		if(sizeOptions > 0 && vote <= sizeOptions) {
-        			vote_system.addVote(vote, sender);
-        		}
+        	if(isVoteActive) {
+        		int vote;
+            	int sizeOptions = theoptions.size();
+            	if(scanner.hasNextInt()) {
+            		vote = scanner.nextInt();
+            		if(sizeOptions > 0 && vote <= sizeOptions) {
+            			vote_system.addVote(vote, sender);
+            		}
+            	}
+        	} else {
+        		sendMessage(my_channel, sender + " : The vote system is not active. Please try again later.");
         	}
+        	
         }
         
         else if (command.equalsIgnoreCase("!myvote")) {
-        	int chosen = vote_system.getMyChosenOption(sender);
-        	sendMessage(my_channel, sender + " : You have chosen choice #" + chosen + " - " + theoptions.get(chosen-1));
+        	if(isVoteActive) {
+        		int chosen = vote_system.getMyChosenOption(sender);
+            	sendMessage(my_channel, sender + " : You have chosen choice #" + chosen + " - " + theoptions.get(chosen-1));
+        	} else {
+        		sendMessage(my_channel, sender + " : The vote system is not active. Please try again later.");
+        	}
+        	
         }
+      //--------------- END VOTE SYSTEM ---------------
+        
+        
+        
+        
+        
+        
+        //------------------ START WAGER SYSTEM -------------------
+        
+        else if (command.equalsIgnoreCase("!startwager") && (sender.equals(channel_owner) || the_devs.contains(sender) || (the_ops.contains(sender) && allOpsUseCommands))) {
+        	String currentOption = "";
+        	boolean isFirstWord = true;
+        	if(!scanner.hasNext()) {
+        		sendMessage(my_channel, sender + " : Missing arguments for options. Each option must be proceeded by a dash. Example: !startwager -Win -Lose -Who cares");
+        	} else {
+        		if(!isWagerActive) {
+            		while(scanner.hasNext()){
+                		String word = scanner.next();
+                		if(isFirstWord) {
+                			if(!word.contains("-")) {
+                				sendMessage(my_channel, sender + " : Missing arguments for options. Each option must be proceeded by a dash. Example: !startwager -He will die -He will live forever");
+                			} else {
+                				currentOption = word.substring(1);
+                				if(!scanner.hasNext()) {
+                					theWagerOptions.add(currentOption.toLowerCase());
+                				}
+                				isFirstWord = false;
+                			}
+                		} else {
+                			if(!word.contains("-")) {
+                				currentOption = currentOption + " " + word;
+                				if(!scanner.hasNext()) {
+                					theWagerOptions.add(currentOption.toLowerCase());
+                				}
+                			} else {
+                				theWagerOptions.add(currentOption.toLowerCase());
+                				currentOption = word.substring(1);
+                				if(!scanner.hasNext()) {
+                					theWagerOptions.add(currentOption.toLowerCase());
+                				}
+                			}
+                		}
+                	}
+                	if(!isWagerActive) {   //If the wager system is inactive and there has been options set
+                		if(theWagerOptions.size() > 0) {
+                			placedWages.clear();
+                			wager_system = new MyWagerSystem(theWagerOptions);
+                    		String longOptions = "";
+                    		for(int i = 0; i < theWagerOptions.size(); i++) {
+                    			longOptions = longOptions+ "    " +  (i+1) +". " +theWagerOptions.get(i);
+                    		}
+                    		sendMessage(my_channel, sender + " : The wager system has been activated with " + theWagerOptions.size() + " options. The Options:  " +longOptions +". Winners receive 2 x their wager amount. Please type !wager <choice> <amount>  to place your bet. Example:  !wager 1 200");
+                    		isWagerActive = true;
+                		}
+                	} else {
+                		sendMessage(my_channel, sender + " : There is already a wager currently active. Please end the current wager before attempting to start a new one.");
+                	}
+        		} else {
+        			sendMessage(my_channel, sender + " : There is already a wager currently active. Please end the current wager before attempting to start a new one.");
+        		}
+        		
+        	}
+        	
+        }
+        
+        else if (command.equalsIgnoreCase("!wagerwinners") && (sender.equals(channel_owner) || the_devs.contains(sender) || (the_ops.contains(sender) && allOpsUseCommands))) {
+        	if(!scanner.hasNextInt()) {
+        		sendMessage(my_channel, sender + " : Missing arguments. You must specify the winning choice. Example: !wagerwinners 2         If your unsure what the choices were, type !wagerchoices");
+        	} else {
+        		int theIndex = scanner.nextInt();
+        		if(isWagerActive) {
+        			if(theIndex > 0 && theIndex <= theWagerOptions.size()) {
+        				List<WagerUser> theWinners = wager_system.chooseWinner(theIndex);
+        				int countWinners = 0;
+        				for(int i = 0; i < theWinners.size(); i++) {
+	            			WagerUser tempuser = theWinners.get(i);
+	            			my_botUsers.incrementTankerPoints(tempuser.getBetterName(), (tempuser.getBetAmount()*2));
+	            			countWinners++;
+	            		}
+        				sendMessage(my_channel, sender + " : The winning choice for the bet was #" + (theIndex) + " - " + theWagerOptions.get(theIndex-1) + " , With a total of " +wager_system.getTotalCount() + " wagers made and a total of " + countWinners + " winners! All winners received 2 x their bet amount!");
+	            		
+        				isWagerActive = false;
+	                	theWagerOptions.clear();		
+        	            		
+        			} else {
+        				sendMessage(my_channel, sender + " : The argument is out of the range of the choices. If your unsure what the choices were, type !wagerchoices");
+                    	
+        			}
+            		
+            	} else {
+            		sendMessage(my_channel, sender + " : The wager system is not currently activated. Type !startwager <arg1> <arg2> ... <arg N>          where each arg must begin with a dash -   Example: !startwager -We will live forever -We will die a horrible death");
+            	}
+        	}  	
+        }
+        
+        else if (command.equalsIgnoreCase("!wagerchoices")) {
+        	if(theWagerOptions.size() > 0 && isWagerActive) {
+        		String longOptions = "";
+        		for(int i = 0; i < theWagerOptions.size(); i++) {
+        			longOptions = longOptions+ "    " +  (i+1) +". " +theWagerOptions.get(i);
+        		}
+        		sendMessage(my_channel, sender + " : There are currently " + theWagerOptions.size() + " options to place a wager on. The choices are:  " +longOptions );
+    		}
+        }
+        
+        else if (command.equalsIgnoreCase("!wager")) {
+        	int choice = 0;
+        	int amount = 0;
+        	boolean shouldSubPoints;
+        	if (isWagerActive) {
+        		if(!scanner.hasNextInt()) { //NO NEXT INT
+            		sendMessage(my_channel, sender + " : Missing arguments. You must specify the choice your placing the wager on. Example: !wager 2 200         If your unsure what the choices were, type !wagerchoices");
+            	} else {
+        			choice = scanner.nextInt();
+            		if(!scanner.hasNextInt()) { //NO NEXT INT
+            			sendMessage(my_channel, sender + " : Missing arguments. You must specify the wager amount for the choice your placing the wager. Example: !wager 2 200         If your unsure what the choices were, type !wagerchoices");
+                    } else { //both arguments check out, lets carry on
+                    	amount = scanner.nextInt();
+                		if(my_botUsers.getMyCurrentPoints(sender) >= amount) { //Check to be sure they have the points to bid with
+                			if(choice > 0 && choice <= theWagerOptions.size()) {
+                				shouldSubPoints = wager_system.addBet(sender.toLowerCase(), choice, amount);
+                				if(shouldSubPoints) { //If wager added successfully, lets decrement the points now.
+                					placedWages.add(sender);
+                					my_botUsers.decrementTankerPoints(sender.toLowerCase(), amount);
+                				}
+                			}
+                			
+                		} else {
+                			sendMessage(my_channel, sender + " : You do not have enough points to make that wager. Please check your current points before trying again.");
+                		}
+                	}
+            	}
+        	} else {
+        		sendMessage(my_channel, sender + " : the wager system is not activated at this time. Please try again later.");
+                
+        	}
+        	
+        }
+        
+        else if (command.equalsIgnoreCase("!mywager")) {
+        	if(isWagerActive) {
+        		int chosen = wager_system.getMyChosenOption(sender);
+            	sendMessage(my_channel, sender + " : You have chosen to place a wager on choice #" + chosen + " - " + theWagerOptions.get(chosen-1) + ", for the amount of " + wager_system.getMyBetAmount(sender.toLowerCase()) + " " + my_points_name);
+        	} else {
+        		sendMessage(my_channel, sender + " : the wager system is not activated at this time. Please try again later.");
+        	}
+        	
+        }
+      //------------------END WAGER SYSTEM-------------------
         
         scanner.close();
     }
@@ -763,6 +952,23 @@ public class MyBot extends PircBot implements Observer{
             sendMessage(my_channel, "Current User Points: " + my_userTankerPoints.getUsers());
             my_userTankerPoints.emptyUsers();
             tankerPointsQue.clear();
+            
+            if(isWagerActive) {
+            	if(!placedWages.isEmpty()) {
+            		String entries = "";
+                	for(int i = 0; i < placedWages.size(); i++) {
+                		if(i == 0) {
+                			entries = entries +  placedWages.get(i);
+                		} else {
+                			entries = entries + ", " + placedWages.get(i);
+                		}
+                		
+                	}
+                	sendMessage(my_channel, "Users That Placed Wagers: " + entries);
+                	placedWages.clear();
+            	}
+            	
+            }
 		}
 		
 		//MyLottoSystem Observer: Lists who has been entered into the lottery
@@ -871,5 +1077,15 @@ public class MyBot extends PircBot implements Observer{
 	public void setCurrentUsers(User[] my_users2) {
         my_users = my_users2;
         my_botUsers.setCurrentUsers(my_users2);
+	}
+
+	public boolean importUserMap(File file) {
+		return my_botUsers.importUserMap(file);
+		
+	}
+	
+	public boolean exportUserMap() {
+		return my_botUsers.exportUserMap();
+		
 	}
 }

@@ -37,6 +37,7 @@ import javax.swing.Icon;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JCheckBoxMenuItem;
+import javax.swing.JFileChooser;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JMenu;
@@ -92,6 +93,9 @@ public class MyBotApp extends JFrame implements Observer, Runnable{		//can't ext
 	private JRadioButtonMenuItem rbmenuBackupYes; //option to backup
 	private JRadioButtonMenuItem rbMenuBackupNo; //option to not backup
 	private boolean waspreviouslyConnected = false;
+	
+	private JMenuItem importMenuItem;
+	private JMenuItem exportMenuItem;
 
 
 	//programFrame.setPreferredSize(new Dimension(800, 800));
@@ -186,6 +190,14 @@ public class MyBotApp extends JFrame implements Observer, Runnable{		//can't ext
                 KeyEvent.VK_E);
 		JMenuItem DocumentMenuItem = new JMenuItem("Documentation",
                 KeyEvent.VK_D);
+		importMenuItem = new JMenuItem("Import Points...",
+                KeyEvent.VK_I);
+		importMenuItem.setEnabled(false);
+		importMenuItem.setToolTipText("You must be connected for the Import option to enable...");
+		exportMenuItem = new JMenuItem("Export Points...",
+                KeyEvent.VK_X);
+		exportMenuItem.setEnabled(false);
+		exportMenuItem.setToolTipText("You must be connected for the Export option to enable...");
 		JMenuItem AboutMenuItem = new JMenuItem("About",
                 KeyEvent.VK_A);
 		JMenuItem DevMenuItem = new JMenuItem("Help Develop",
@@ -210,6 +222,69 @@ public class MyBotApp extends JFrame implements Observer, Runnable{		//can't ext
 		
 		
 		//Setup Menu Item Listeners
+		importMenuItem.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent event) {
+            	Object[] options = {"Yes, I understand the risk...",
+                "Cancel..."};
+            	
+            	int result = JOptionPane.showOptionDialog(tempFrame,
+            			"WARNING! Be very careful with this option. If used incorrectly \n" +
+        					    "this can easily overwrite or erase your entire USER_MAP_FILE which stores\n"
+        					    + "your points for everyone! Please be sure to enable Backups under setting \n" +
+        					    "and open/close the software a few times for backups to be made. You can also manually \n" +
+        					    "create a backup of your USER_MAP_FILE by navigating to where your Phreak_Bot_.rar \n" +
+        					    "is opened from. Then just copy the USER_MAP_FILE and paste it in a safe place.\n \n"
+        					    + "Do you understand the risk, have created a backup, and want to import points from \n" +
+        					    "a plane .txt document (space delimented with       username      points            ? \n",
+            		    tempFrame.getTitle(), JOptionPane.YES_NO_OPTION,
+            		    JOptionPane.QUESTION_MESSAGE,
+            		    null,    
+            		    options,  
+            		    options[0]); 
+            	
+                if(result == 0) {
+                	final JFileChooser fc = new JFileChooser();
+                	
+                	int returnVal = fc.showOpenDialog(tempFrame);
+
+                    if (returnVal == JFileChooser.APPROVE_OPTION) {
+                        File file = fc.getSelectedFile();
+                        
+                        if(file != null) {
+                        	boolean isSuccess = theBot.importUserMap(file);
+                        	if(isSuccess) {
+                        		JOptionPane.showMessageDialog(tempFrame,
+                        			    "The import of the user points was successfull.");
+                        	} else {
+                        		JOptionPane.showMessageDialog(tempFrame,
+                        			    "The import of the user points was unsuccessfull.",
+                        			    "Error",
+                        			    JOptionPane.ERROR_MESSAGE);
+                        	}
+                        }
+                        System.out.println("Opening: " + file.getName());
+                    } else {
+                    	System.out.println("Open command cancelled by user.");
+                    }
+                }
+              }
+          });
+		
+		exportMenuItem.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent event) {
+            	boolean isSuccess = theBot.exportUserMap();
+            	if(isSuccess) {
+            		JOptionPane.showMessageDialog(tempFrame,
+            			    "The export of the user points was successfull. The file name is export_user_points_timeStamp.txt");
+            	} else {
+            		JOptionPane.showMessageDialog(tempFrame,
+            			    "The export of the user points was unsuccessfull.",
+            			    "Error",
+            			    JOptionPane.ERROR_MESSAGE);
+            	}
+              }
+
+          });
 		exiMenuItem.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent event) {
             	shutDownAndSave();
@@ -260,6 +335,8 @@ public class MyBotApp extends JFrame implements Observer, Runnable{		//can't ext
 
 		
 		//add items to main and sub menu bars
+		file.add(exportMenuItem);
+		file.add(importMenuItem);
 		file.add(exiMenuItem);
 		settings.add(debugSettingItem);
 		settings.add(advertTime);
@@ -675,6 +752,8 @@ public class MyBotApp extends JFrame implements Observer, Runnable{		//can't ext
 					thebotMain = new MyBotMain(myArgs);
 					theBot = thebotMain.getCreatedBot();
 					theBot.setAdvertTimer(checkAdvertTimer());
+					importMenuItem.setEnabled(true);
+					exportMenuItem.setEnabled(true);
 					connectFlag = true;
 					gooduser = true;
 					if(theBot.isConnected()) {
