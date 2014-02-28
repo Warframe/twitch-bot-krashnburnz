@@ -344,6 +344,7 @@ public class MyBotUserPoints extends Observable implements Runnable, Serializabl
 	}
 
 	public boolean importUserMap(File file) {
+		saveBackupFile(); //Auto Save of a backup
 		Map<User, Integer> tempUserMap = new HashMap<User, Integer>();
 		BufferedReader reader = null;
 		try {
@@ -362,15 +363,17 @@ public class MyBotUserPoints extends Observable implements Runnable, Serializabl
 					username = sc.next();
 					if(sc.hasNextInt()) {
 						points = sc.nextInt();
-						saveBackupFile(); //Auto Save of a backup
+
 						tempUserMap.put(new User("", username.toLowerCase()), points);
-						saveFile(tempUserMap, "User_Map_File"); //Save new map to file overwriting original
-						updateUserMap(); //Now update everything with new map
-						updateRankedList(); //Update the ranked list with the new map
+						
 					}
 				}
 				sc.close();
 			}
+			saveFile(tempUserMap, "User_Map_File"); //Save new map to file overwriting original
+			updateUserMap(); //Now update everything with new map
+			updateRankedList(); //Update the ranked list with the new map
+
 			reader.close();
 			
 		} catch (IOException e) {
