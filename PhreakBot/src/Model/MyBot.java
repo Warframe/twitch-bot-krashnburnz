@@ -225,6 +225,7 @@ public class MyBot extends PircBot implements Observer{
         	String user;
         	if(scanner.hasNext()) {
         		user = scanner.next();
+        		my_botUsers.updateRankedList();
         		int rank = my_botUsers.getRank(user);
                 sendMessage(channel, user +"'s current " + my_points_name + " are: " + my_botUsers.getMyCurrentPoints(user) + " with a rank of "+ rank + " out of " + my_botUsers.getTotalUserCount());
         	} else {
@@ -300,6 +301,7 @@ public class MyBot extends PircBot implements Observer{
         }
 
         else if (command.equalsIgnoreCase("!rank")) {
+        	my_botUsers.updateRankedList();
         	int rank = my_botUsers.getRank(sender);
         	if(rank == 0){
     			sendMessage(my_channel, sender + " : Sorry but you do not exist in the ranking list yet. Please try again in 5 minutes!");
@@ -326,7 +328,7 @@ public class MyBot extends PircBot implements Observer{
                         sendMessage(channel, sender + ": " + user + " only has " + currentUserPoints + " " + my_points_name + ". Please subtract this amount instead." );
             		} else {
                 		my_botUsers.decrementTankerPoints(user, amount);
-                        sendMessage(channel, sender + ": " + amount + " " + my_points_name + " removed from " + user + " leaving a total of " + my_botUsers.getMyCurrentPoints(user) + " " + my_points_name + " remaining.");
+                        sendMessage(channel, sender + ": " + amount + " " + my_points_name + " removed from " + user);
                         my_botUsers.updateRankedList();
             		}
 
@@ -856,9 +858,27 @@ public class MyBot extends PircBot implements Observer{
         		int chosen = wager_system.getMyChosenOption(sender);
             	sendMessage(my_channel, sender + " : You have chosen to place a wager on choice #" + chosen + " - " + theWagerOptions.get(chosen-1) + ", for the amount of " + wager_system.getMyBetAmount(sender.toLowerCase()) + " " + my_points_name);
         	} else {
-        		sendMessage(my_channel, sender + " : the wager system is not activated at this time. Please try again later.");
+        		sendMessage(my_channel, sender + " : The wager system is not activated at this time. Please try again later.");
         	}
         	
+        }
+        
+        else if (command.equalsIgnoreCase("!closewager") && (sender.equals(channel_owner) || the_devs.contains(sender) || (the_ops.contains(sender) && allOpsUseCommands))) {
+        	if(isWagerActive) {
+        		wager_system.canWager(false);
+        		sendMessage(my_channel, sender + " : The ability to place wagers has been closed. No more wagers will be accepted!");
+        	} else {
+        		sendMessage(my_channel, sender + " :The wager system is not activated at this time. Please try again later.");
+        	} 	
+        }
+        
+        else if (command.equalsIgnoreCase("!openwager") && (sender.equals(channel_owner) || the_devs.contains(sender) || (the_ops.contains(sender) && allOpsUseCommands))) {
+        	if(isWagerActive) {
+        		wager_system.canWager(true);
+        		sendMessage(my_channel, sender + " : Wagers will now be accepted again!");
+        	} else {
+        		sendMessage(my_channel, sender + " : The wager system is not activated at this time. Please try again later.");
+        	} 	
         }
       //------------------END WAGER SYSTEM-------------------
         
