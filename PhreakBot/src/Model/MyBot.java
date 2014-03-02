@@ -856,7 +856,10 @@ public class MyBot extends PircBot implements Observer{
         else if (command.equalsIgnoreCase("!mywager")) {
         	if(isWagerActive) {
         		int chosen = wager_system.getMyChosenOption(sender);
-            	sendMessage(my_channel, sender + " : You have chosen to place a wager on choice #" + chosen + " - " + theWagerOptions.get(chosen-1) + ", for the amount of " + wager_system.getMyBetAmount(sender.toLowerCase()) + " " + my_points_name);
+        		if(chosen > 0) {
+        			sendMessage(my_channel, sender + " : You have chosen to place a wager on choice #" + chosen + " - " + theWagerOptions.get(chosen-1) + ", for the amount of " + wager_system.getMyBetAmount(sender.toLowerCase()) + " " + my_points_name);
+        		}
+            	
         	} else {
         		sendMessage(my_channel, sender + " : The wager system is not activated at this time. Please try again later.");
         	}

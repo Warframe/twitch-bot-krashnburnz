@@ -112,14 +112,14 @@ public class MyBotLogin extends JPanel implements Runnable{
 		this.add(txtBotname);
 		
 		//Both Login password
-		labelPassword= new JLabel("Twitch Oath Key: ");;
+		labelPassword= new JLabel("Bot's Twitch Oath Key: ");;
 		txtPassword= new JPasswordField();	
 		txtPassword.setPreferredSize(txtsize);
 		this.add(labelPassword);
 		this.add(txtPassword);
 		
 		//Streamer name
-		labelMyChannelName = new JLabel("Channel Name: ");
+		labelMyChannelName = new JLabel("Your Twitch Channel Name: ");
 		txtChannelName = new JTextField();
 		txtChannelName.setPreferredSize(txtsize);
 		this.add(labelMyChannelName);
@@ -187,7 +187,7 @@ public class MyBotLogin extends JPanel implements Runnable{
 	 * via inner classes for each button.
 	 */
 	private void setupBtns() {
-		btnOathKey = new JButton("OathKey");
+		btnOathKey = new JButton("Get OathKey");
 		btnConnect = new JButton("Connect");
 		btnDonate = new JButton("Donate");
 	  	btnRegisterNow = new JButton("Register");
@@ -240,18 +240,13 @@ public class MyBotLogin extends JPanel implements Runnable{
 		//About button listener setup.
 		btnOathKey.addActionListener(new ActionListener() {
 		      public void actionPerformed(final ActionEvent the_event) {
-		    	  if (the_event.getSource() == btnOathKey) {
-		    		  String botName = getBotName();
-		    		  if(botName.isEmpty()) {
-		    			  JOptionPane.showMessageDialog(null, "You can get your oath key from http://www.twitchapps.com/tmi/ \n" +
-		    					  								"\n" + 
-		    					  								"Please be sure you log into twitch with your BOT INFORMATION to get your bot's oathkey!");
-		    		  } else {
-		    			  JOptionPane.showMessageDialog(null, "You can get your oath key from http://www.twitchapps.com/tmi/ \n" +
-		    					  								"\n" + 
-		    					  								"Please be sure you log into twitch with your BOT INFORMATION to get your bot's oathkey!");
-		    		  }
-		    		}
+		    	  
+		    		  try {
+							openWebpage(new URL("http://www.twitchapps.com/tmi/"));
+						} catch (MalformedURLException e) {
+							// TODO Auto-generated catch block
+							e.printStackTrace();
+						}
 		    	}
 		      });
 

@@ -201,9 +201,15 @@ public class MyBotApp extends JFrame implements Observer, Runnable{		//can't ext
 		JMenuItem AboutMenuItem = new JMenuItem("About",
                 KeyEvent.VK_A);
 		JMenuItem DevMenuItem = new JMenuItem("Help Develop",
-                KeyEvent.VK_V);
+                KeyEvent.VK_H);
 		JMenuItem DonateMenuItem = new JMenuItem("Donate",
-                KeyEvent.VK_O);
+                KeyEvent.VK_D);
+		JMenuItem ProjectMenuItem = new JMenuItem("Project Home",
+                KeyEvent.VK_P);
+		JMenuItem ChangesMenuItem = new JMenuItem("Change Log",
+                KeyEvent.VK_C);
+		JMenuItem SourceMenuItem = new JMenuItem("Source Code",
+                KeyEvent.VK_S);
 		debugSettingItem = new JCheckBoxMenuItem("Debug ON");
 		debugSettingItem.setEnabled(true);
 		debugSettingItem.setState(true);
@@ -332,6 +338,38 @@ public class MyBotApp extends JFrame implements Observer, Runnable{		//can't ext
 						"Project Website: https://code.google.com/p/twitch-bot-krashnburnz/");
 		        }
 		      });
+		ProjectMenuItem.addActionListener(new ActionListener() {
+		      public void actionPerformed(final ActionEvent the_event) {
+		    	  try {
+					openWebpage(new URL("https://code.google.com/p/twitch-bot-krashnburnz/"));
+				} catch (MalformedURLException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+		        }
+		      });
+		
+		SourceMenuItem.addActionListener(new ActionListener() {
+		      public void actionPerformed(final ActionEvent the_event) {
+		    	  try {
+					openWebpage(new URL("https://code.google.com/p/twitch-bot-krashnburnz/source/checkout"));
+				} catch (MalformedURLException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+		        }
+		      });
+		
+		ChangesMenuItem.addActionListener(new ActionListener() {
+		      public void actionPerformed(final ActionEvent the_event) {
+		    	  try {
+					openWebpage(new URL("https://code.google.com/p/twitch-bot-krashnburnz/source/list"));
+				} catch (MalformedURLException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+		        }
+		      });
 
 		
 		//add items to main and sub menu bars
@@ -345,6 +383,9 @@ public class MyBotApp extends JFrame implements Observer, Runnable{		//can't ext
 		helpMenu.add(AboutMenuItem);
 		supportMenu.add(DevMenuItem);
 		supportMenu.add(DonateMenuItem);
+		supportMenu.add(ProjectMenuItem);
+		supportMenu.add(SourceMenuItem);
+		supportMenu.add(ChangesMenuItem);
 		menuBar.add(file);
 		menuBar.add(settings);
 		menuBar.add(helpMenu);

@@ -9,27 +9,32 @@ public class MyWagerSystem {
 	List<String> my_choices;
 	List<WagerUser> winners;
 	int my_totalBets;
+	boolean canWager;
 	
 	public MyWagerSystem(ArrayList<String> theOptions) {
 		my_choices = theOptions;;
 		my_betters = new ArrayList<WagerUser>();
 		betters = new ArrayList<String>();
 		my_totalBets = 0;
+		canWager = true;
 	}
 
 
 	public boolean addBet(String the_name, int the_choice, int the_amount) {
 		boolean answer = false;
-		if(!betters.contains(the_name.toLowerCase())) { //has not bet yet, so let them
-			if(the_choice > 0 && the_choice <= my_choices.size()) {// Options 1 through n, where n is the max choice option
-				if(the_amount > 0) { //must be a positive bet amount
-					betters.add(the_name);
-					my_betters.add(new WagerUser(the_name, the_choice, the_amount));
-					my_totalBets++;
-					answer = true;
-				}				
-			}		
+		if(canWager) {
+			if(!betters.contains(the_name.toLowerCase())) { //has not bet yet, so let them
+				if(the_choice > 0 && the_choice <= my_choices.size()) {// Options 1 through n, where n is the max choice option
+					if(the_amount > 0) { //must be a positive bet amount
+						betters.add(the_name);
+						my_betters.add(new WagerUser(the_name, the_choice, the_amount));
+						my_totalBets++;
+						answer = true;
+					}				
+				}		
+			}
 		}
+		
 		return answer;	
 	}
 	
@@ -76,5 +81,9 @@ public class MyWagerSystem {
 	
 	public int getTotalCount() {
 		return my_totalBets;
+	}
+	
+	public void canWager(boolean result) {
+		canWager = result;
 	}
 }
