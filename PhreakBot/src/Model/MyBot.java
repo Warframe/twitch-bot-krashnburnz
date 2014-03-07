@@ -233,6 +233,17 @@ public class MyBot extends PircBot implements Observer{
         	}
         }
         
+        else if (command.equalsIgnoreCase("!nightbotpooh")) {
+    			sendMessage(my_channel, "You bad boy nightbot... Dont timeoutz himz!");        	
+            	
+        }
+
+        
+        else if (command.equalsIgnoreCase("!defendstreamer")) {
+			sendMessage(my_channel, "Really BRAH--> Your jokes rock!    .... NO Really... they are great.............!");        	
+        	
+    }
+        
         else if (command.equalsIgnoreCase("!removekeyword") && (sender.equals(channel_owner) || the_devs.contains(sender) || (the_ops.contains(sender) && allOpsUseCommands))) {
         		my_keyword = "";
             	giveawayOn = false;
@@ -825,11 +836,11 @@ public class MyBot extends PircBot implements Observer{
         	boolean shouldSubPoints;
         	if (isWagerActive) {
         		if(!scanner.hasNextInt()) { //NO NEXT INT
-            		sendMessage(my_channel, sender + " : Missing arguments. You must specify the choice your placing the wager on. Example: !wager 2 200         If your unsure what the choices were, type !wagerchoices");
+            		
             	} else {
         			choice = scanner.nextInt();
             		if(!scanner.hasNextInt()) { //NO NEXT INT
-            			sendMessage(my_channel, sender + " : Missing arguments. You must specify the wager amount for the choice your placing the wager. Example: !wager 2 200         If your unsure what the choices were, type !wagerchoices");
+            			
                     } else { //both arguments check out, lets carry on
                     	amount = scanner.nextInt();
                 		if(my_botUsers.getMyCurrentPoints(sender) >= amount) { //Check to be sure they have the points to bid with
