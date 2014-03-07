@@ -319,8 +319,8 @@ public class MyBotUserPoints extends Observable implements Runnable, Serializabl
     	while(it.hasNext()) {
     		String userName = it.next().getNick().toLowerCase();
     		sortedPointsList.add(userName);
-    		Collections.reverse(sortedPointsList);
     	}
+		Collections.reverse(sortedPointsList);
 	}
 	public int getRank(String user) {
 		int answer = -1;
