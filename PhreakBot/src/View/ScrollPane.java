@@ -6,6 +6,8 @@
  */
 package View;
 
+import java.awt.Color;
+import java.awt.Component;
 import java.util.Calendar;
 import java.util.List;
 
@@ -15,7 +17,9 @@ import javax.swing.JTable;
 import javax.swing.ListSelectionModel;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
+import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.DefaultTableModel;
+
 import Model.User;
 
 /**
@@ -27,6 +31,7 @@ import Model.User;
 public class ScrollPane {
 
 	private DefaultTableModel model;
+	private DefaultTableCellRenderer cell;
 	private JTable table;
 	private JScrollPane scrollPane;
 	private JLabel flag;
@@ -62,6 +67,25 @@ public class ScrollPane {
 		tableSetUp(table, para);
 		scrollPane = new JScrollPane(table);
 		table.setFillsViewportHeight(true);
+		
+		cell = new DefaultTableCellRenderer() {
+			private static final long serialVersionUID = 1L;
+
+			@Override
+			public Component getTableCellRendererComponent(JTable table,
+					Object value, boolean isSelected, boolean hasFocus, int row, int column) {
+				Component c = super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
+				
+				if (value.toString().equals("Yes")) {
+					c.setForeground(Color.GREEN);
+				} else if (value.toString().equals("No")) {
+					c.setForeground(Color.RED);
+				}
+				
+				return c;
+			}
+		};
+		table.setDefaultRenderer(Object.class, cell);
 	} //Table
 
 	/**
