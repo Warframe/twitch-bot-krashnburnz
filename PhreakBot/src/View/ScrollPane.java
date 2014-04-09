@@ -20,6 +20,7 @@ import javax.swing.event.ListSelectionListener;
 import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.DefaultTableModel;
 
+import Model.MyBot;
 import Model.User;
 
 /**
@@ -30,6 +31,7 @@ import Model.User;
  */
 public class ScrollPane {
 
+	private MyBot theBot;
 	private DefaultTableModel model;
 	private DefaultTableCellRenderer cell;
 	private JTable table;
@@ -47,7 +49,8 @@ public class ScrollPane {
 	 * 		  ProgramChair(pc), SubprogramChair(spc), Reviewer(rev), Author(auth).
 	 * @author Ching-Ting Huang
 	 */
-	public ScrollPane(final String para) {
+	public ScrollPane(final MyBot bot, final String para) {
+		theBot = bot;
 		row = -1;
 		Object[][] data = getList(para);
 		String[] header = getHeader(para);
@@ -68,6 +71,7 @@ public class ScrollPane {
 		scrollPane = new JScrollPane(table);
 		table.setFillsViewportHeight(true);
 		
+		/*
 		cell = new DefaultTableCellRenderer() {
 			private static final long serialVersionUID = 1L;
 
@@ -86,6 +90,7 @@ public class ScrollPane {
 			}
 		};
 		table.setDefaultRenderer(Object.class, cell);
+		*/
 	} //Table
 
 	/**
@@ -153,17 +158,11 @@ public class ScrollPane {
 	 */
 	private String[] getHeader(final String type) {
 		String[] header = null;
-		if (type.equals("user")) {
-			header = new String[]{"User", "points"};
-		} else if (type.equals("pc")) {
-			header = new String[]{"Title", "Author", "Subprogram Chair", "Assigned Reviewer(s)", "ID"};
-		} else if (type.equals("spc")) {
-			header = new String[]{"Title", "Author", "Assigned Reviewer(s)", "ID"};
-		} else if (type.equals("rev")) {
-			header = new String[]{"Title", "Author", "ID"};
-		} else if (type.equals("auth")) {
-			header = new String[]{"Title", "Submitted Conference", "Date Submitted", "ID"};
-		}
+		if (type.equals("user") || type.equals("viewer")) {
+			header = new String[]{"Rank", "Name", "Points", "Subscriber", "Moderator"};
+		} else if (type.equals("version")) {
+			header = new String[]{"Version", "Realsed", "Doc. Version", "Description"};
+		} 
 		return header;
 	} //getHeader
 
@@ -178,15 +177,11 @@ public class ScrollPane {
 	 */
 	private Object[][] getList(final String type) {
 		Object[][] data = null;
-		if (type.equals("user")) {
+		if (type.equals("user") || type.equals("viewer")) {
 			
-		} else if (type.equals("pc")) {
+		} else if (type.equals("version")) {
 			
-		} else if (type.equals("spc")) {
-			
-		} else if (type.equals("rev")) {
-			
-		} else if (type.equals("auth")) {
+		} else if (type.equals("events")) {
 			
 		}
 		return data;

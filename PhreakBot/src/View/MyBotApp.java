@@ -46,6 +46,7 @@ import javax.swing.JMenuItem;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JRadioButtonMenuItem;
+import javax.swing.JTabbedPane;
 import javax.swing.KeyStroke;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
@@ -68,14 +69,13 @@ public class MyBotApp extends JFrame implements Observer, Runnable{		//can't ext
 	private Console console;
 	private MyBotLogin loginWindow;
 	private JButton logout;
-	private TabPanel myTabs;
+	private JTabbedPane myTabs;
 	private JPanel loginConsolePanel;
 	private JPanel currentViewerPanel;
 	private JPanel eventPanel;
 	private JPanel usersPanel;
 	private JPanel versionPanel;
 	private JLabel name;
-	private UserPanel currentUserPanel;
 	private MyBotMain thebotMain;
 	private MyBot theBot;
 	private boolean connectFlag;
@@ -394,7 +394,7 @@ public class MyBotApp extends JFrame implements Observer, Runnable{		//can't ext
 		
 		
 		//create login window and various other panels
-		myTabs = new TabPanel();
+		myTabs = new JTabbedPane(JTabbedPane.TOP);
 		connectFlag = false;
 		name = new JLabel("");
 		
@@ -405,10 +405,10 @@ public class MyBotApp extends JFrame implements Observer, Runnable{		//can't ext
 		loginThread.start();
 		
 		//Create panels for tabs
-		currentViewerPanel = new JPanel();
+		currentViewerPanel = new CurrentViewers(theBot);
 		eventPanel = new JPanel();
-		usersPanel = new JPanel();
-		versionPanel  = new JPanel();;
+		usersPanel = new Users(theBot);
+		versionPanel  = new Version(theBot);
 		
 		//setup logout btn
 		logout = logoutBtn(this);
@@ -452,9 +452,6 @@ public class MyBotApp extends JFrame implements Observer, Runnable{		//can't ext
 		JPanel paneltest = new JPanel();
 		paneltest.add(test1);
 		paneltest.setVisible(true);
-		
-		//setup Current Viewer Panel
-		currentUserPanel = new UserPanel();
 
 		//lets add the panels to the tabbed pane window
 		myTabs.add("Login/Console", loginConsolePanel);
@@ -463,7 +460,7 @@ public class MyBotApp extends JFrame implements Observer, Runnable{		//can't ext
 		myTabs.add("Users", usersPanel);
 		myTabs.add("Version", versionPanel);
 		add(myTabs, BorderLayout.CENTER);
-		currentViewerPanel.add(paneltest);
+		//versionPanel.add(paneltest);
 
 		//create image icon for the frame
 	    ImageIcon imgicon = new ImageIcon("cloud.png");
