@@ -10,6 +10,7 @@ import java.awt.Color;
 import java.awt.Component;
 import java.util.Calendar;
 import java.util.List;
+import java.util.Map;
 
 import javax.swing.JLabel;
 import javax.swing.JScrollPane;
@@ -108,12 +109,6 @@ public class ScrollPane {
 		table.setShowVerticalLines(true);
 		table.setAutoCreateRowSorter(true);
 		table.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
-
-		if (type.equals("conf")) {
-			//no extra column to hide in this case
-		} else {
-			table.removeColumn(table.getColumn("ID"));	//hide this column from view
-		}
 		
 		table.getSelectionModel().addListSelectionListener(new ListSelectionListener() {
 			@Override
@@ -139,12 +134,19 @@ public class ScrollPane {
 	 * @return 2D-array of the papers and its meta-data.
 	 * @author Ching-Ting Huang
 	 */
-	private Object[][] putUserToArray(final List<User> list) {
-		Object[][] data = new Object[list.size()][1];
-		for (int i = 0; i < list.size(); i++) {
-			Calendar date = Calendar.getInstance();
-			data[i][0] = list.get(i).getNick();
-			data[i][1] = list.get(i).getPrefix();
+	private Object[][] putAllUserToArray() {
+		int userNum = theBot.getUnP().getTotalUserCount();
+		Map<User, Integer> unp = theBot.getUnP().getUserMap();
+		Object[][] data = new Object[userNum][5];
+		
+		int count = 0;
+		for(Map.Entry<User, Integer> entry : unp.entrySet()) {
+			data[count][0] = theBot.getUnP().getRank(entry.getKey().getNick());
+			data[count][1] = entry.getKey().getNick();
+			data[count][2] = entry.getValue();
+			data[count][3] = "tba";
+			data[count][4] = "tba";
+			count++;
 		}
 		return data;
 	} //putAuthToArray
@@ -161,7 +163,7 @@ public class ScrollPane {
 		if (type.equals("user") || type.equals("viewer")) {
 			header = new String[]{"Rank", "Name", "Points", "Subscriber", "Moderator"};
 		} else if (type.equals("version")) {
-			header = new String[]{"Version", "Realsed", "Doc. Version", "Description"};
+			header = new String[]{"Version", "Released", "Doc. Version", "Description"};
 		} 
 		return header;
 	} //getHeader
@@ -178,12 +180,14 @@ public class ScrollPane {
 	private Object[][] getList(final String type) {
 		Object[][] data = null;
 		if (type.equals("user") || type.equals("viewer")) {
+			data = putAllUserToArray();
+		/*} else if (type.equals("viewer")) {
 			
-		} else if (type.equals("version")) {
+		}else if (type.equals("version")) {
 			
-		} else if (type.equals("events")) {
+		} else if (type.equals("events")) { */
 			
-		}
+		} 
 		return data;
 	} //getList
 

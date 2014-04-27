@@ -9,6 +9,9 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
+import java.util.Date;
 
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
@@ -21,24 +24,49 @@ import javax.swing.SwingConstants;
 
 import Model.MyBot;
 
+/**
+ * User tab displaying all users: rank (by points accumulated), user-name (nick), points, sub/mod.
+ * Including add/subtract points ability from program + user general information.
+ * @author Ching-Ting Huang
+ */
 public class Users extends JPanel {
 	
 	private static final long serialVersionUID = -2544375717703845827L;
 	private static final String MESSAGE = "Enter points to add or subtract";
+	private ScrollPane scroll;
 	private MyBot theBot;
+	
+	//private Date joinDate;
+	private String joinDate = "0/0/0";
+	private String email = "blahblahblah";
+	private boolean isASub = false;
+	private boolean isAMod = false;
+	private boolean isVIP = true;
 	
 	public Users(MyBot bot) {
 		theBot = bot;
-		//scroll = new ScrollPane(theBot, "viewer");
+		scroll = new ScrollPane(theBot, "viewer");
 		setup();
 	}
 	
 	private void setup() {
-		JScrollPane pane = new JScrollPane();//scroll.getScrollPane();
+		//JScrollPane pane = new JScrollPane();
+		JScrollPane pane = scroll.getScrollPane();
 		pane.setWheelScrollingEnabled(true);
+		final JLabel flag = new JLabel("users");
+		flag.addPropertyChangeListener(new PropertyChangeListener() {
+
+			@Override
+			public void propertyChange(PropertyChangeEvent e) {
+				if (e.getSource() == flag) {
+					//set variables to update
+				}
+			}
+		});
+		//scroll.setFlag(flag);
 		
 		setLayout(new BorderLayout());
-		add(pane, BorderLayout.CENTER);
+		add(pane, BorderLayout.NORTH);
 		add(misc(), BorderLayout.SOUTH);
 	} //generalSetup
 	
@@ -116,7 +144,7 @@ public class Users extends JPanel {
 		Container join = new Container();
 		join.setLayout(new FlowLayout(FlowLayout.LEFT));
 		JLabel lbjoin = new JLabel("Join Date:");
-		JLabel txjoin = new JLabel("test");
+		JLabel txjoin = new JLabel(joinDate);
 		join.add(lbjoin);
 		join.add(txjoin);
 		
@@ -130,7 +158,7 @@ public class Users extends JPanel {
 		Container mail = new Container();
 		mail.setLayout(new FlowLayout(FlowLayout.LEFT));
 		JLabel lbmail = new JLabel("E-Mail:");
-		JLabel txmail = new JLabel("text");
+		JLabel txmail = new JLabel(email);
 		mail.add(lbmail);
 		mail.add(txmail);
 		
@@ -186,6 +214,7 @@ public class Users extends JPanel {
 
 		JCheckBox isSub = new JCheckBox("Is Sub?");
 		isSub.setHorizontalTextPosition(SwingConstants.LEFT);
+		isSub.setSelected(isASub);
 		isSub.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent arg0) {
@@ -197,6 +226,7 @@ public class Users extends JPanel {
 		
 		JCheckBox isMod = new JCheckBox("Is Mod?");
 		isMod.setHorizontalTextPosition(SwingConstants.LEFT);
+		isMod.setSelected(isAMod);
 		isMod.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
@@ -208,6 +238,7 @@ public class Users extends JPanel {
 		
 		JCheckBox isSpecial = new JCheckBox("Special");
 		isSpecial.setHorizontalTextPosition(SwingConstants.LEFT);
+		isSpecial.setSelected(isVIP);
 		isSpecial.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {

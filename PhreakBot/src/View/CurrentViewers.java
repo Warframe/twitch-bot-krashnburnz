@@ -21,6 +21,12 @@ import javax.swing.SwingConstants;
 
 import Model.MyBot;
 
+/**
+ * CurrentViewer tab to display current viewer of the channel including rank (based on points accumulated), name (nick),
+ * points, sub/mod. 
+ * Include functionality for add/subtract points from specific user, display general user info when click on 1 user.
+ * @author Ching-Ting Huang
+ */
 public class CurrentViewers extends JPanel {
 	
 

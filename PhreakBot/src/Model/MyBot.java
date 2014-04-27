@@ -1122,4 +1122,20 @@ public class MyBot extends PircBot implements Observer{
 		return my_botUsers.exportUserMap();
 		
 	}
+	
+	public User[] getUsers() {
+		return my_users;
+	}
+	
+	public MyBotUserPoints getUnP() {
+		return my_botUsers;
+	}
+	
+	public List<String> getDevs() {
+		return the_devs;
+	}
+	
+	public MyUpdateUsers updateUsers() {
+		return my_updateUsers;
+	}
 }

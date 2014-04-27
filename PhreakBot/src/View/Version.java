@@ -15,6 +15,11 @@ import javax.swing.JScrollPane;
 
 import Model.MyBot;
 
+/**
+ * Version tab displaying past version of the program including version number, change notes, date.
+ * Including functionality to display user's current program version + update program to latest version.
+ * @author Ching-Ting Huang
+ */
 public class Version extends JPanel {
 	
 	private static final long serialVersionUID = -2544375717703845827L;
