@@ -20,52 +20,165 @@ import org.jibble.pircbot.NickAlreadyInUseException;
 import org.jibble.pircbot.PircBot;
 public class MyBot extends PircBot implements Observer{
 	
+	/**
+	 * Boolean value to show if the lottery is active.
+	 */
 	private boolean lottoOn;
 	
+	/**
+	 * boolean to show if the points are being accumulated. This value
+	 * has nothing to do with the actual stream. It only says if points
+	 * are being accumulated at this time, or NOT!
+	 */
 	private boolean currentlyStreaming;
 	
+	/**
+	 * boolean to show if a giveaway is actually active. This is only a
+	 * FLAG. this variable is set by the streamer. It is a set value
+	 * for thebot only, and has no external value to any/all giveway
+	 * programs, website, etc...
+	 */
 	private boolean giveawayOn = false;
-	
+
+	/**
+	 * boolean value if the auction is on or off
+	 */
 	private boolean auctionOn = false;
 	
+	/**
+	 * The cost value to participate in the lottery.(ticket cost)
+	 */
 	private int my_lottery_cost;
 	
+	/**
+	 * 	integer value of the actual lotter timer
+	 */
 	private int lotto_time_counter;
 	
+	/**
+	 * The bot name  String value from the login screen
+	 */
 	private String my_bot_name;
 	
+	/**
+	 * This is a string that the owner of the channel can set
+	 * if they use the !setKeyword command, and will echo any user that says
+	 * this command. this is just for ECHO purposes in the chat channel, and 
+	 * has nothing to do with ANY giveaway
+	 */
 	private String my_keyword = "";
 	
+	/**
+	 * This is the channel owner, the same value entered into the
+	 * "channel" section of the LOGIN SCREEN of the bot.
+	 */
 	private String channel_owner;
 	
+	/**
+	 * 	This is the points name that is entered by the owner in
+	 * the login screen.
+	 */
 	private String my_points_name;
-	
-	private String my_lotto_cost;
-	
+
+	/**
+	 * This is a data structure (array list) containing the OPS (also known as Moderators)
+	 * in the channel.
+	 */
 	private ArrayList<String> the_ops;
 	
+	/**
+	 * This is a data structure (array list) containing the Developers
+	 * in the channel. This is is currently set Statically in the MAIN FILE
+	 * as of 4/30/2014
+	 */
 	private ArrayList<String> the_devs;
 	
+	/**
+	 * String containing the Channel name of the Twitch channel 
+	 * that is input on the Login Screen
+	 */
 	private String my_channel = ""; 
 	
+	/**
+	 * This is a variable that will contain the String message 
+	 * of the chat message. Every time a chat message is received
+	 * by the bot, it will set that message to this variable, and will
+	 * be parsed down the line.
+	 */
 	private String my_message;
 	
+	/**
+	 * The time the lottery will be active (overall).
+	 * Example: the lottery should last 30 mins, this is 
+	 * the value this variable would hold.
+	 */
 	private int my_lottery_timer;
 	
+	/**
+	 * This is a collection LinkedList set up to hold all
+	 * the people that have typed the keyword when the owner
+	 * of the channel has used the !setKeyword command. It will use this
+	 * collection to keep track of who entered, and method below will ensure
+	 * based off this list that no multiple entrys will be accepted.
+	 */
 	private List<String> eventKeywordPeople = new LinkedList<String> ();
 
+	/**
+	 * This is a collection LinkedList set up to hold all
+	 * the people that have entered the lotto and it will use this
+	 * collection to keep track of who entered, and method below will ensure
+	 * based off this list that no multiple entrys will be accepted.
+	 */
 	private List<String> lottoPeople = new ArrayList<String> ();
 	
+	/**
+	 * This is a collection LinkedList set up to hold all
+	 * the people that have tried to recover their current points.
+	 * The name is old, but it still does the same function as the legacy
+	 * word says, it holds a list of people wanting to know their points,
+	 * then after a certain amount of time, a method is called that will
+	 * reference this list , an display the names Iterating the structure.
+	 */
 	private List<String> tankerPointsQue = new LinkedList<String> ();
 	
+	/**
+	 * This is an Array of USERS that are currently watching the stream.
+	 * In a method, this list is updated for the bot, and it retrieves all the
+	 * names of the users in the MIRC/Twitch chat room, then stores their names in this 
+	 * data structure.
+	 */
 	private User[] my_users;
 	
+	/**
+	 * This is a Class that holds all the information/Users/Names/Points
+	 * from all the users ever recorded. Please refer to the MyBotUserPoints
+	 * for more information. Basically this class loads all Users that have been saved
+	 * to a file, loads them into memory, and every 5 minutes, this class is updated, and 
+	 * saved when the increment of points happens.
+	 */
 	private MyBotUserPoints my_botUsers;
 	
+	/**
+	 * This is a variable that represents a Class that controls the Keyword entries related to the owner
+	 * using the !setkeyword command       This is simply an efficient way to
+	 * hold the users that enter with the keyword into the event, 
+	 * and also has a dedicated thread to display which user was entered into the Keyword Giveaway.
+	 * 
+	 * NOTE: See the update()  method at the bottom of this class. This class uses an 
+	 * Observer/Observable pattern like many methods in my program. 
+	 */
 	private MyKeywordEntry my_keywordEntrys;
 	
+	/**
+	 * NOT CURRENTLY IN USE: Please Disregard ( S I T E D     F O R   R E M O V A L)
+	 */
 	private MyUpdateUsers my_updateUsers;
 	
+	/**
+	 * NOT CURRENTLY IN USE: Please Disregard (legacy Method, still not removed,
+	 * Still have not seen any function to degrade/improve - so it has been left
+	 * for legacy purposes)
+	 */
 	private MyTankerPoints my_userTankerPoints;
 	
 	private MyLottoSystem my_lottoSystem;
@@ -220,7 +333,7 @@ public class MyBot extends PircBot implements Observer{
                 sendMessage(channel, sender + ": Lack of arguments to set keyword and start event. Proper format: !setkeyword <keyword>");
         	}
         }
-        
+
         else if (command.equalsIgnoreCase("!checkpoints") && (sender.equals(channel_owner) || the_devs.contains(sender) || (the_ops.contains(sender) && allOpsUseCommands))) {
         	String user;
         	if(scanner.hasNext()) {
