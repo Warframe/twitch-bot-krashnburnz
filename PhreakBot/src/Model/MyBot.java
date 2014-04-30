@@ -61,7 +61,7 @@ public class MyBot extends PircBot implements Observer{
 	private String my_bot_name;
 	
 	/**
-	 * This is a string that the owner of the channel can set
+	 * String that the owner of the channel can set
 	 * if they use the !setKeyword command, and will echo any user that says
 	 * this command. this is just for ECHO purposes in the chat channel, and 
 	 * has nothing to do with ANY giveaway
@@ -69,25 +69,25 @@ public class MyBot extends PircBot implements Observer{
 	private String my_keyword = "";
 	
 	/**
-	 * This is the channel owner, the same value entered into the
+	 * String Value of the channel owner, the same value entered into the
 	 * "channel" section of the LOGIN SCREEN of the bot.
 	 */
 	private String channel_owner;
 	
 	/**
-	 * 	This is the points name that is entered by the owner in
+	 * 	Strinbg value of the points name that is entered by the owner in
 	 * the login screen.
 	 */
 	private String my_points_name;
 
 	/**
-	 * This is a data structure (array list) containing the OPS (also known as Moderators)
+	 * Data structure (array list) containing the OPS (also known as Moderators)
 	 * in the channel.
 	 */
 	private ArrayList<String> the_ops;
 	
 	/**
-	 * This is a data structure (array list) containing the Developers
+	 * Data structure (array list) containing the Developers
 	 * in the channel. This is is currently set Statically in the MAIN FILE
 	 * as of 4/30/2014
 	 */
@@ -100,22 +100,22 @@ public class MyBot extends PircBot implements Observer{
 	private String my_channel = ""; 
 	
 	/**
-	 * This is a variable that will contain the String message 
-	 * of the chat message. Every time a chat message is received
+	 * String that will contain the message 
+	 * of the chat "message". Every time a chat message is received
 	 * by the bot, it will set that message to this variable, and will
 	 * be parsed down the line.
 	 */
 	private String my_message;
 	
 	/**
-	 * The time the lottery will be active (overall).
+	 * Integer value of the time the lottery will be active (overall).
 	 * Example: the lottery should last 30 mins, this is 
 	 * the value this variable would hold.
 	 */
 	private int my_lottery_timer;
 	
 	/**
-	 * This is a collection LinkedList set up to hold all
+	 * A LinkedList set up to hold all
 	 * the people that have typed the keyword when the owner
 	 * of the channel has used the !setKeyword command. It will use this
 	 * collection to keep track of who entered, and method below will ensure
@@ -124,7 +124,7 @@ public class MyBot extends PircBot implements Observer{
 	private List<String> eventKeywordPeople = new LinkedList<String> ();
 
 	/**
-	 * This is a collection LinkedList set up to hold all
+	 * A LinkedList set up to hold all
 	 * the people that have entered the lotto and it will use this
 	 * collection to keep track of who entered, and method below will ensure
 	 * based off this list that no multiple entrys will be accepted.
@@ -132,7 +132,7 @@ public class MyBot extends PircBot implements Observer{
 	private List<String> lottoPeople = new ArrayList<String> ();
 	
 	/**
-	 * This is a collection LinkedList set up to hold all
+	 * A LinkedList set up to hold all
 	 * the people that have tried to recover their current points.
 	 * The name is old, but it still does the same function as the legacy
 	 * word says, it holds a list of people wanting to know their points,
@@ -142,7 +142,7 @@ public class MyBot extends PircBot implements Observer{
 	private List<String> tankerPointsQue = new LinkedList<String> ();
 	
 	/**
-	 * This is an Array of USERS that are currently watching the stream.
+	 * An Array of USERS that are currently watching the stream.
 	 * In a method, this list is updated for the bot, and it retrieves all the
 	 * names of the users in the MIRC/Twitch chat room, then stores their names in this 
 	 * data structure.
@@ -150,7 +150,7 @@ public class MyBot extends PircBot implements Observer{
 	private User[] my_users;
 	
 	/**
-	 * This is a Class that holds all the information/Users/Names/Points
+	 * A instance of a Class that holds all the information/Users/Names/Points
 	 * from all the users ever recorded. Please refer to the MyBotUserPoints
 	 * for more information. Basically this class loads all Users that have been saved
 	 * to a file, loads them into memory, and every 5 minutes, this class is updated, and 
@@ -159,7 +159,7 @@ public class MyBot extends PircBot implements Observer{
 	private MyBotUserPoints my_botUsers;
 	
 	/**
-	 * This is a variable that represents a Class that controls the Keyword entries related to the owner
+	 * An instance of a Class that controls the Keyword entries related to the owner
 	 * using the !setkeyword command       This is simply an efficient way to
 	 * hold the users that enter with the keyword into the event, 
 	 * and also has a dedicated thread to display which user was entered into the Keyword Giveaway.
