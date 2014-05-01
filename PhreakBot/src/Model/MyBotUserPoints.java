@@ -56,13 +56,6 @@ public class MyBotUserPoints extends Observable implements Runnable, Serializabl
 		setChannel(the_channel);
 		setCurrentUsers(the_Users);
 		my_runCount = 0; 
-    	UsersMap = loadFile("User_Map_File");
-    	if(UsersMap == null) {
-    		System.out.println("UserMap is NULL");
-    		Map<User, Integer> themap = new HashMap<User, Integer>();
-    		themap.put(new User("@", "user10204354"), 1);
-    		UsersMap = themap;
-    	}
 	}
 
 	public synchronized void run() {
