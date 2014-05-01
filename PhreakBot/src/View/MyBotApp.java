@@ -407,7 +407,7 @@ public class MyBotApp extends JFrame implements Observer, Runnable{		//can't ext
 		//Create panels for tabs
 		currentViewerPanel = new CurrentViewers(theBot);
 		eventPanel = new JPanel();
-		usersPanel = new Users(theBot);
+
 		versionPanel  = new Version(theBot);
 		
 		//setup logout btn
@@ -790,6 +790,11 @@ public class MyBotApp extends JFrame implements Observer, Runnable{		//can't ext
 					thebotMain = new MyBotMain(myArgs);
 					theBot = thebotMain.getCreatedBot();
 					theBot.setAdvertTimer(checkAdvertTimer());
+					
+					//New location for ScrollPane Panel
+					usersPanel = new Users(theBot);
+					
+					
 					importMenuItem.setEnabled(true);
 					exportMenuItem.setEnabled(true);
 					connectFlag = true;

@@ -167,6 +167,7 @@ public class MyBotUserPoints extends Observable implements Runnable, Serializabl
     		themap.put(new User("@", "user10204354"), 1);
     		UsersMap = themap;
     	} 
+    	updateRankedList();
 	}
 	
 	
