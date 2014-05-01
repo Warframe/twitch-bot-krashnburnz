@@ -51,7 +51,7 @@ public class Console extends WindowAdapter implements WindowListener, ActionList
 		{
 			if(isCustomConsoleOn) {
 				PipedOutputStream pout=new PipedOutputStream(this.pin);
-				System.setOut(new PrintStream(pout,true));
+				//System.setOut(new PrintStream(pout,true));
 			}
 		} 
 		catch (java.io.IOException io)
@@ -68,7 +68,7 @@ public class Console extends WindowAdapter implements WindowListener, ActionList
 		try 
 		{
 			PipedOutputStream pout2=new PipedOutputStream(this.pin2);
-			System.setErr(new PrintStream(pout2,true));
+			//System.setErr(new PrintStream(pout2,true));
 		} 
 		catch (java.io.IOException io)
 		{
