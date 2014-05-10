@@ -11,7 +11,7 @@ import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
-import java.util.Date;
+
 
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
@@ -27,49 +27,118 @@ import Model.MyBot;
 /**
  * User tab displaying all users: rank (by points accumulated), user-name (nick), points, sub/mod.
  * Including add/subtract points ability from program + user general information.
+ * 
  * @author Ching-Ting Huang
  */
 public class Users extends JPanel {
 	
 	private static final long serialVersionUID = -2544375717703845827L;
+	/**
+	 * Message embedded in textfield for streamer to input points to add/take away from his/her viewer
+	 */
 	private static final String MESSAGE = "Enter points to add or subtract";
-	private ScrollPane scroll;
-	private MyBot theBot;
 	
+	/**
+	 * Controller
+	 */
+	private MyBot my_bot;
+	
+	/**
+	 * The scroll pane containing all viewers' metadata that has ever been to the streamer's channel.
+	 */
+	private ScrollPane scroll;
+	
+	/**
+	 * After selecting a viewer from the scroll pane, this is that user's join date to the streamer's channel.
+	 */
+	private JLabel joinDate;
 	//private Date joinDate;
-	private String joinDate = "0/0/0";
-	private String email = "blahblahblah";
+	
+	/**
+	 * After selecting a viewer from the scroll pane, this is that user's email address.
+	 */
+	private JLabel email;
+	
+	/**
+	 * Selected viewer's name/ID/nick-name.
+	 */
+	private JLabel id;
+	
+	/**
+	 * Selected viewer's total accumulated points.
+	 */
+	private JLabel pt;
+	
+	/**
+	 * After selecting a viewer from the scroll pane, this shows whether this viewer is a subscriber.
+	 */
 	private boolean isASub = false;
+	
+	/**
+	 * After selecting a viewer from the scroll pane, this shows whether this viewer is a moderator.
+	 */
 	private boolean isAMod = false;
+	
+	/**
+	 * After selecting a viewer from the scroll pane, this shows whether this viewer is "SPECIAL" (future feature?).
+	 */
 	private boolean isVIP = true;
 	
+	/**
+	 * Check if a viewer is being selected in the scroll panel (add/subtract point management check).
+	 */
+	private boolean isSelected = false;
+	
+	/**
+	 * Constructor: initialize class & get access to controller
+	 * 
+	 * @param bot is the controller
+	 */
 	public Users(MyBot bot) {
-		theBot = bot;
-		scroll = new ScrollPane(theBot, "viewer");
+		my_bot = bot;
+		scroll = new ScrollPane(bot, "user");
+		joinDate = new JLabel("0/0/0");
+		email = new JLabel("Not Available");
+		id = new JLabel("");
+		pt = new JLabel("");
 		setup();
 	}
 	
+	/**
+	 * General layout of this panel: scroll pane, user metadata. 
+	 */
 	private void setup() {
-		//JScrollPane pane = new JScrollPane();
 		JScrollPane pane = scroll.getScrollPane();
-		pane.setWheelScrollingEnabled(true);
 		final JLabel flag = new JLabel("users");
 		flag.addPropertyChangeListener(new PropertyChangeListener() {
 
 			@Override
 			public void propertyChange(PropertyChangeEvent e) {
 				if (e.getSource() == flag) {
-					//set variables to update
+					isSelected = true;
+					Object[] data = scroll.getRow(scroll.getSelectedRowNum());
+					id.setText((String) data[1]);
+					pt.setText(String.valueOf(data[2]));
+					String sub = (String) data[3];
+					isASub = sub.equals("Yes") ? true : false;
+					String mod = (String) data[4];
+					isAMod = mod.equals("Yes") ? true : false;
+					
+					//join date to-be-implemented
+					//e-mail to-be-implemented
 				}
 			}
 		});
-		//scroll.setFlag(flag);
+		scroll.setFlag(flag);
 		
 		setLayout(new BorderLayout());
-		add(pane, BorderLayout.NORTH);
+		add(pane, BorderLayout.CENTER);
 		add(misc(), BorderLayout.SOUTH);
 	} //generalSetup
 	
+	/**
+	 * Include user information on bottom of panel: add/subtract points from a user, user metadata
+	 */
 	private Container misc() {
 		Container border = new Container();
 		border.setLayout(new BorderLayout());
@@ -79,6 +148,11 @@ public class Users extends JPanel {
 		return border;
 	} //misc
 	
+	/**
+	 * Textfield and buttons for adding/subtracting points from a user selected in the panel.
+	 * 
+	 * @return container included buttons and textfield
+	 */
 	private Container pointManagement() {
 		Container flow = new JPanel(new FlowLayout());
 		final JTextField points = new JTextField(MESSAGE, 18);
@@ -95,38 +169,52 @@ public class Users extends JPanel {
 		
 		add.addActionListener(new ActionListener() {
 			@Override
-			public void actionPerformed(ActionEvent arg0) {
-				// TODO Auto-generated method stub
-				
-				
-				
-				if (points.getText().equals(MESSAGE)) {
-					JOptionPane.showMessageDialog(null, "Please select a user first before adding points!", "Update", JOptionPane.WARNING_MESSAGE);
-				} else if (points.getText().isEmpty()) {
-					JOptionPane.showMessageDialog(null, "Please input desired number to add points!", "Update", JOptionPane.WARNING_MESSAGE);
+			public void actionPerformed(ActionEvent arg0) {		
+				String input = points.getText();
+				if (isSelected) {
+					if (input != null && !input.isEmpty()) {
+						if (!input.equals(MESSAGE)) {
+							try {				//NEED TO ADD POINTS TO THE USER HERE!!!!!!!!!!!!!!!!!!!!!!
+								int p = Integer.parseInt(input);
+								JOptionPane.showMessageDialog(null, p + " points has been added to " + id.getText() + "!", "Update", JOptionPane.INFORMATION_MESSAGE);
+								points.setForeground(Color.GRAY);
+								points.setText(MESSAGE);
+
+							} catch (NumberFormatException e) {
+								JOptionPane.showMessageDialog(null, "Please input a number (integer)!", "Input Error", JOptionPane.ERROR_MESSAGE);
+							}
+						}
+					} else {
+						JOptionPane.showMessageDialog(null, "Please input desired number to add points!", "Update", JOptionPane.WARNING_MESSAGE);
+					}
 				} else {
-					JOptionPane.showMessageDialog(null, points.getText() + " points has been added to *USERNAME HERE*" + "!", "Update", JOptionPane.INFORMATION_MESSAGE);
-					points.setForeground(Color.GRAY);
-					points.setText(MESSAGE);
+					JOptionPane.showMessageDialog(null, "Please select a user first before adding points!", "Update", JOptionPane.WARNING_MESSAGE);
 				}
 			}
 		});
 		
 		sub.addActionListener(new ActionListener() {
 			@Override
-			public void actionPerformed(ActionEvent arg0) {
-				// TODO Auto-generated method stub
-				
-				
-				
-				if (points.getText().equals(MESSAGE)) {
-					JOptionPane.showMessageDialog(null, "Please select a user first before subtracting points!", "Update", JOptionPane.WARNING_MESSAGE);
-				}  else if (points.getText().isEmpty()) {
-					JOptionPane.showMessageDialog(null, "Please input desired number to subtract points!", "Update", JOptionPane.WARNING_MESSAGE);
+			public void actionPerformed(ActionEvent arg0) {			
+				String input = points.getText();
+				if (isSelected) {
+					if (input != null && !input.isEmpty()) {
+						if (!input.equals(MESSAGE)) {
+							try {				//NEED TO ADD POINTS TO THE USER HERE!!!!!!!!!!!!!!!!!!!!!!
+								int p = Integer.parseInt(input);
+								JOptionPane.showMessageDialog(null, p + " points has been taken from " + id.getText() + "!", "Update", JOptionPane.INFORMATION_MESSAGE);
+								points.setForeground(Color.GRAY);
+								points.setText(MESSAGE);
+
+							} catch (NumberFormatException e) {
+								JOptionPane.showMessageDialog(null, "Please input a number (integer)!", "Input Error", JOptionPane.ERROR_MESSAGE);
+							}
+						}
+					} else {
+						JOptionPane.showMessageDialog(null, "Please input desired number to subtract points!", "Update", JOptionPane.WARNING_MESSAGE);
+					}
 				} else {
-					JOptionPane.showMessageDialog(null, points.getText() + " points has been taken from *USERNAME HERE*" + "!", "Update", JOptionPane.INFORMATION_MESSAGE);
-					points.setForeground(Color.GRAY);
-					points.setText(MESSAGE);
+					JOptionPane.showMessageDialog(null, "Please select a user first before subtracting points!", "Update", JOptionPane.WARNING_MESSAGE);
 				}
 			}
 		});
@@ -137,6 +225,12 @@ public class Users extends JPanel {
 		return flow;
 	} //pointManagement
 	
+	/**
+	 * Select a user from panel will display the user's metadata as follows: Join date, total points accumulated, email,
+	 * nick-name, other misc. info.
+	 * 
+	 * @return container including labels displaying information.
+	 */
 	private Container info() {
 		Container grid = new Container();
 		grid.setLayout(new GridLayout(4, 2));
@@ -144,56 +238,52 @@ public class Users extends JPanel {
 		Container join = new Container();
 		join.setLayout(new FlowLayout(FlowLayout.LEFT));
 		JLabel lbjoin = new JLabel("Join Date:");
-		JLabel txjoin = new JLabel(joinDate);
 		join.add(lbjoin);
-		join.add(txjoin);
+		join.add(joinDate);
 		
 		Container total = new Container();
 		total.setLayout(new FlowLayout(FlowLayout.LEFT));
 		JLabel lbtotal = new JLabel("Total:");
-		JLabel txtotal = new JLabel("test");
 		total.add(lbtotal);
-		total.add(txtotal);
+		total.add(pt);
 		
 		Container mail = new Container();
 		mail.setLayout(new FlowLayout(FlowLayout.LEFT));
 		JLabel lbmail = new JLabel("E-Mail:");
-		JLabel txmail = new JLabel(email);
 		mail.add(lbmail);
-		mail.add(txmail);
+		mail.add(email);
 		
 		Container misc1 = new Container();
 		misc1.setLayout(new FlowLayout(FlowLayout.LEFT));
 		JLabel lbmisc1 = new JLabel("Misc Info:");
-		JLabel txmisc1 = new JLabel("test");
+		JLabel txmisc1 = new JLabel("N/A");
 		misc1.add(lbmisc1);
 		misc1.add(txmisc1);
 		
-		Container id = new Container();
-		id.setLayout(new FlowLayout(FlowLayout.LEFT));
+		Container nick = new Container();
+		nick.setLayout(new FlowLayout(FlowLayout.LEFT));
 		JLabel lbid = new JLabel("Misc ID:");
-		JLabel txid = new JLabel("test");
-		id.add(lbid);
-		id.add(txid);
+		nick.add(lbid);
+		nick.add(id);
 		
 		Container misc2 = new Container();
 		misc2.setLayout(new FlowLayout(FlowLayout.LEFT));
 		JLabel lbmisc2 = new JLabel("Misc Info:");
-		JLabel txmisc2 = new JLabel("test");
+		JLabel txmisc2 = new JLabel("N/A");
 		misc2.add(lbmisc2);
 		misc2.add(txmisc2);
 		
 		Container misc3 = new Container();
 		misc3.setLayout(new FlowLayout(FlowLayout.LEFT));
 		JLabel lbmisc3 = new JLabel("Misc Info:");
-		JLabel txmisc3 = new JLabel("test");
+		JLabel txmisc3 = new JLabel("N/A");
 		misc3.add(lbmisc3);
 		misc3.add(txmisc3);
 		
 		Container misc4 = new Container();
 		misc4.setLayout(new FlowLayout(FlowLayout.LEFT));
 		JLabel lbmisc4 = new JLabel("Misc Info:");
-		JLabel txmisc4 = new JLabel("test");
+		JLabel txmisc4 = new JLabel("N/A");
 		misc4.add(lbmisc4);
 		misc4.add(txmisc4);
 
@@ -201,13 +291,18 @@ public class Users extends JPanel {
 		grid.add(total);
 		grid.add(mail);
 		grid.add(misc1);
-		grid.add(id);
+		grid.add(nick);
 		grid.add(misc2);
 		grid.add(misc3);
 		grid.add(misc4);
 		return grid;
 	} //info
 	
+	/**
+	 * For future features identifying unique users: subscriber, moderator, "special".
+	 * 
+	 * @return container including checkboxes.
+	 */
 	private Container other() {
 		Container grid = new Container();
 		grid.setLayout(new GridLayout(3, 1));

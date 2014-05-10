@@ -36,7 +36,11 @@ public class Version extends JPanel {
 		pane.setWheelScrollingEnabled(true);
 		
 		setLayout(new BorderLayout());
-		add(pane, BorderLayout.CENTER);
+		//add(pane, BorderLayout.CENTER);
+		
+		JPanel tmp = new JPanel();
+		tmp.add(new JLabel("To Be Implemented."));
+		add(tmp, BorderLayout.CENTER);
 		add(misc(), BorderLayout.SOUTH);
 	} //generalSetup
 	

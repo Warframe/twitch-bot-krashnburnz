@@ -147,7 +147,7 @@ public class MyBot extends PircBot implements Observer{
 	 * names of the users in the MIRC/Twitch chat room, then stores their names in this 
 	 * data structure.
 	 */
-	private User[] my_users;
+	private User[] my_users = {};
 	
 	/**
 	 * A instance of a Class that holds all the information/Users/Names/Points
@@ -1236,16 +1236,16 @@ public class MyBot extends PircBot implements Observer{
 		
 	}
 	
-	public User[] getUsers() {
+	public User[] getCurUsers() {
 		return my_users;
 	}
 	
-	public MyBotUserPoints getUnP() {
+	public MyBotUserPoints getAllUnP() {
 		return my_botUsers;
 	}
 	
-	public List<String> getDevs() {
-		return the_devs;
+	public List<String> getMods() {
+		return the_ops;
 	}
 	
 	public MyUpdateUsers updateUsers() {

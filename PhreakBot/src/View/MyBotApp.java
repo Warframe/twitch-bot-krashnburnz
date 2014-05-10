@@ -405,9 +405,9 @@ public class MyBotApp extends JFrame implements Observer, Runnable{		//can't ext
 		loginThread.start();
 		
 		//Create panels for tabs
-		currentViewerPanel = new CurrentViewers(theBot);
+		currentViewerPanel = new JPanel();
 		eventPanel = new JPanel();
-
+		usersPanel = new JPanel();
 		versionPanel  = new Version(theBot);
 		
 		//setup logout btn
@@ -448,10 +448,11 @@ public class MyBotApp extends JFrame implements Observer, Runnable{		//can't ext
 		
 		//test labels
 		JLabel test1 = new JLabel();
-		test1.setText("TESTING 123");
-		JPanel paneltest = new JPanel();
-		paneltest.add(test1);
-		paneltest.setVisible(true);
+		test1.setText("To Be Implemented.");
+		//JPanel paneltest = new JPanel();
+		eventPanel.add(test1);
+		//paneltest.add(test1);
+		//paneltest.setVisible(true);
 
 		//lets add the panels to the tabbed pane window
 		myTabs.add("Login/Console", loginConsolePanel);
@@ -459,6 +460,13 @@ public class MyBotApp extends JFrame implements Observer, Runnable{		//can't ext
 		myTabs.add("Events", eventPanel);
 		myTabs.add("Users", usersPanel);
 		myTabs.add("Version", versionPanel);
+		
+		//disable tabs before user is connected: currentViewer (no user here anyway), events (not connected to start...),
+		//MyBot is not initialized until connected, therefore usersPanel cannot be displayed as well
+		myTabs.setEnabledAt(1, false);
+		myTabs.setEnabledAt(2, false);
+		myTabs.setEnabledAt(3, false);
+		
 		add(myTabs, BorderLayout.CENTER);
 		//versionPanel.add(paneltest);
 
@@ -665,6 +673,11 @@ public class MyBotApp extends JFrame implements Observer, Runnable{		//can't ext
 						rbMenuItem10.setEnabled(true);
 						rbMenuItem30.setEnabled(true);
 						//consolePanel.setVisible(false);
+						
+						myTabs.setEnabledAt(1, false);
+						myTabs.setEnabledAt(2, false);
+						myTabs.setEnabledAt(3, false);
+
 		    	  }
 		        }
 		      });
@@ -792,8 +805,10 @@ public class MyBotApp extends JFrame implements Observer, Runnable{		//can't ext
 					theBot.setAdvertTimer(checkAdvertTimer());
 					
 					//New location for ScrollPane Panel
+					currentViewerPanel = new CurrentViewers(theBot);
 					usersPanel = new Users(theBot);
-					
+					myTabs.setComponentAt(1, currentViewerPanel);
+					myTabs.setComponentAt(3, usersPanel);
 					
 					importMenuItem.setEnabled(true);
 					exportMenuItem.setEnabled(true);
@@ -807,6 +822,11 @@ public class MyBotApp extends JFrame implements Observer, Runnable{		//can't ext
 						loginWindow.isConnectBtnEnabled(false);
 						loginWindow.setVisible(false);
 						consolePanel.setVisible(true);
+						
+						myTabs.setEnabledAt(1, true);
+						myTabs.setEnabledAt(2, true);
+						myTabs.setEnabledAt(3, true);
+						
 						logout.setEnabled(true);
 						theBot.wantDisconnect(false);
 						debugSettingItem.setEnabled(true);

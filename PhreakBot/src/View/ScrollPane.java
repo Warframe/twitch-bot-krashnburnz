@@ -9,6 +9,8 @@ package View;
 import java.awt.Color;
 import java.awt.Component;
 import java.util.Calendar;
+import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -22,6 +24,7 @@ import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.DefaultTableModel;
 
 import Model.MyBot;
+import Model.MyBotUserPoints;
 import Model.User;
 
 /**
@@ -33,8 +36,10 @@ import Model.User;
 public class ScrollPane {
 
 	private MyBot theBot;
-	private DefaultTableModel model;
-	private DefaultTableCellRenderer cell;
+	private MyBotUserPoints allUserNPoints;
+	private User[] curU;
+	private DefaultTableModel generalModel;
+	private DefaultTableModel versionModel;
 	private JTable table;
 	private JScrollPane scrollPane;
 	private JLabel flag;
@@ -46,18 +51,22 @@ public class ScrollPane {
 	 * to populate a JTable that will later be put into JScrollPane to be displayed.
 	 * 
 	 * @param control is the Model Controller.
-	 * @param para is the type of inputs being passed in in String representation: Conference(conf),
-	 * 		  ProgramChair(pc), SubprogramChair(spc), Reviewer(rev), Author(auth).
+	 * @param para is the type of inputs being passed in in String representation: user (user tab), viewer (current viewer tab),
+	 * 		  version (version tab).
 	 * @author Ching-Ting Huang
 	 */
 	public ScrollPane(final MyBot bot, final String para) {
 		theBot = bot;
+		allUserNPoints = bot.getAllUnP();
+		curU = bot.getCurUsers();
+		
 		row = -1;
 		Object[][] data = getList(para);
 		String[] header = getHeader(para);
 		input = data;
 
-		model = new DefaultTableModel(data, header) {
+		//Note: this DefaultTableModel is used only for User/Current Viewer tab, NOT for Version tab!
+		generalModel = new DefaultTableModel(data, header) {
 			private static final long serialVersionUID = -1411446165832277578L;
 
 			@Override
@@ -65,34 +74,92 @@ public class ScrollPane {
 				//make all cells editable = false
 				return false;
 			}
-		};
-
-		table = new JTable(model);
-		tableSetUp(table, para);
-		scrollPane = new JScrollPane(table);
-		table.setFillsViewportHeight(true);
-		
-		/*
-		cell = new DefaultTableCellRenderer() {
-			private static final long serialVersionUID = 1L;
-
+			
 			@Override
-			public Component getTableCellRendererComponent(JTable table,
-					Object value, boolean isSelected, boolean hasFocus, int row, int column) {
-				Component c = super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
-				
-				if (value.toString().equals("Yes")) {
-					c.setForeground(Color.GREEN);
-				} else if (value.toString().equals("No")) {
-					c.setForeground(Color.RED);
+			public Class<?> getColumnClass(int colNum) {
+				switch (colNum) {
+				case 0:
+					return Integer.class;
+				case 1:
+					return String.class;
+				case 2:
+					return Integer.class;
+				case 3: 
+					return String.class;
+				case 4: 
+					return String.class;
+				default:
+					return String.class;
 				}
-				
-				return c;
 			}
 		};
-		table.setDefaultRenderer(Object.class, cell);
-		*/
+		
+		//Note: This DefaultTableModel is for Version tab ONLY!
+		versionModel = new DefaultTableModel(data, header) {
+			private static final long serialVersionUID = -1411446165832277578L;
+
+			@Override
+			public boolean isCellEditable(int row, int column) {
+				//make all cells editable = false
+				return false;
+			}
+			
+			@Override
+			public Class<?> getColumnClass(int colNum) {
+				switch (colNum) {
+				case 0:
+					return Integer.class;
+				case 1:
+					return Date.class;
+				case 2:
+					return Integer.class;
+				case 3: 
+					return String.class;
+				default:
+					return String.class;
+				}
+			}
+		};
+
+		table = new JTable(generalModel);
+		tableSetUp(table, para);
+		cellMod(table);
+		scrollPane = new JScrollPane(table);
+		table.setFillsViewportHeight(true);
 	} //Table
+	
+	/**
+	 * Using DefaultTableCellRenderer to accomplish:
+	 * 
+	 * 1) Color-code "Yes"/"No" for subscriber/moderator column.
+	 * 2) Due to override for getColumnClass() from DefaultTableModel, integer align right & string align left.
+	 * 	  This will force all data to center in the cell regardless of class.
+	 * 
+	 * @param table is the table.
+	 */
+	private void cellMod(JTable table) {
+		for (int i = 0; i < table.getColumnCount(); i++) {
+			DefaultTableCellRenderer center = new DefaultTableCellRenderer() {
+
+				private static final long serialVersionUID = -3894436645096493165L;
+
+				@Override
+				public Component getTableCellRendererComponent(JTable table,
+						Object value, boolean isSelected, boolean hasFocus, int row, int column) {
+					
+					Component c = super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
+					if (value.toString().equals("Yes")) {
+						c.setForeground(Color.GREEN);
+					} else if (value.toString().equals("No")) {
+						c.setForeground(Color.RED);
+					}
+					return c;
+				}
+			};
+			center.setHorizontalAlignment(JLabel.CENTER);
+			table.getColumnModel().getColumn(i).setCellRenderer(center);
+		}
+	}
 
 	/**
 	 * Sets up functions of the JTable: enable only row selection, set cell editable false,
@@ -105,7 +172,7 @@ public class ScrollPane {
 		table.setCellSelectionEnabled(false);
 		table.setDragEnabled(false);
 		table.setRowSelectionAllowed(true);
-		table.setShowHorizontalLines(true);
+		table.setShowHorizontalLines(false);
 		table.setShowVerticalLines(true);
 		table.setAutoCreateRowSorter(true);
 		table.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
@@ -114,7 +181,7 @@ public class ScrollPane {
 			@Override
 			public void valueChanged(ListSelectionEvent e) {
 				if (!e.getValueIsAdjusting()) {
-					row = table.getSelectedRow();
+					row = table.convertRowIndexToModel(table.getSelectedRow());
 					if (row >= 0) {
 						if (flag != null) {
 							flag.setText(flag.getText() + "+");
@@ -127,26 +194,53 @@ public class ScrollPane {
 	} //tableSetup
 
 	/**
-	 * Putting list of all papers for that particular author into 2D-array
-	 * as well as the papers' title, submitted conference and date of submission.
+	 * Put all user (ever recorded) info into array to be displayed in JTable include
+	 * rank, name (nick-name), points collected, isSubscriber?, isMod?...etc.
 	 * 
-	 * @param list is all the papers the author has submitted.
-	 * @return 2D-array of the papers and its meta-data.
+	 * @return 2D-array of the users and their meta-data.
 	 * @author Ching-Ting Huang
 	 */
 	private Object[][] putAllUserToArray() {
-		int userNum = theBot.getUnP().getTotalUserCount();
-		Map<User, Integer> unp = theBot.getUnP().getUserMap();
+		int userNum = allUserNPoints.getTotalUserCount();
+		Map<User, Integer> unp = allUserNPoints.getUserMap();
 		Object[][] data = new Object[userNum][5];
 		
 		int count = 0;
 		for(Map.Entry<User, Integer> entry : unp.entrySet()) {
-			data[count][0] = theBot.getUnP().getRank(entry.getKey().getNick());
+			data[count][0] = theBot.getAllUnP().getRank(entry.getKey().getNick());
 			data[count][1] = entry.getKey().getNick();
 			data[count][2] = entry.getValue();
-			data[count][3] = "tba";
-			data[count][4] = "tba";
+			data[count][3] = "No";
+			data[count][4] = "No";
 			count++;
+		}
+		return data;
+	} //putAuthToArray
+	
+	/**
+	 * Put users (in channel currently) info into array to be displayed in JTable include
+	 * rank, name (nick-name), points collected, isSubscriber?, isMod?...etc.
+	 * 
+	 * @return 2D-array of the users and their meta-data.
+	 * @author Ching-Ting Huang
+	 */
+	private Object[][] putCurUserToArray() {
+		Map<User, Integer> unp = allUserNPoints.getUserMap();
+		int userNum = curU.length;
+		Object[][] data = new Object[userNum][5];
+		
+		for(int i = 0; i < userNum; i++) {
+			User user = curU[i];
+
+			data[i][0] = allUserNPoints.getRank(user.getNick());
+			data[i][1] = user.getNick();
+			if (unp.containsKey(user)) {
+				data[i][2] = unp.get(user);
+			} else {
+				data[i][2] = "N/A";
+			}
+			data[i][3] = "No";
+			data[i][4] = "No";
 		}
 		return data;
 	} //putAuthToArray
@@ -179,13 +273,13 @@ public class ScrollPane {
 	 */
 	private Object[][] getList(final String type) {
 		Object[][] data = null;
-		if (type.equals("user") || type.equals("viewer")) {
+		if (type.equals("user")) {
 			data = putAllUserToArray();
-		/*} else if (type.equals("viewer")) {
+		} else if (type.equals("viewer")) {
+			data = putCurUserToArray();
+		/*} else if (type.equals("version")) {
 			
-		}else if (type.equals("version")) {
-			
-		} else if (type.equals("events")) { */
+		} */
 			
 		} 
 		return data;
@@ -230,57 +324,6 @@ public class ScrollPane {
 		}
 		return result;
 	} //getInput
-
-	/**
-	 * Add additional items into the JTable/JScrollPane.
-	 * 
-	 * @param object is the array of data specified by the caller.
-	 * @author Ching-Ting Huang
-	 */
-	public void addToTable(Object[] object) {
-		/* Object[] object =
-		 * Conference tab: Date, Conference Name, Program Chair Name
-		 * Program Chair tab: Paper Title, Author Name, Subprogram Chair Name
-		 * Subprogram Chair tab: Paper Title, Author Name, Reviewers List
-		 * Reviewer tab: Paper Title, Author Name
-		 * Author tab: Paper Title, Submitted Conference Name, Submission Date
-		 */
-		model.addRow(object);	
-		int row = model.getRowCount();
-		int col = model.getColumnCount();
-		Object[][] temp = new Object[row][col];
-		for (int i = 0; i < row; i++) {
-			for (int j = 0; j < col; j++) {
-				temp[i][j] = model.getValueAt(i, j);
-			}
-		}
-		input = temp;
-	} //addToTable
-
-	/**
-	 * Remove item in 2D-array at index. If looking for selected index, can call
-	 * getSelectedRowNum() to get index.
-	 * 
-	 * @param index is the index number of the item to be deleted from the table.
-	 * @return check if item is properly removed.
-	 * @author Ching-Ting Huang
-	 */
-	public boolean removeFromTable(final int index) {
-		boolean papersStillExist  = true;
-		model.removeRow(index);
-		int row = model.getRowCount();
-		int col = model.getColumnCount();
-		Object[][] temp = new Object[row][col];
-		for (int i = 0; i < row; i++) {
-			for (int j = 0; j < col; j++) {
-				temp[i][j] = model.getValueAt(i, j);
-			}
-		}
-		
-		//Edited by Daniel, Jonathan
-		input = temp;
-		return papersStillExist;
-	} //removeFromTable
 
 	/**
 	 * Gets the current scrollpane.
