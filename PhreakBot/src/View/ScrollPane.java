@@ -8,16 +8,26 @@ package View;
 
 import java.awt.Color;
 import java.awt.Component;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import javax.swing.JLabel;
+import javax.swing.JOptionPane;
 import javax.swing.JScrollPane;
 import javax.swing.JTable;
 import javax.swing.ListSelectionModel;
+import javax.swing.SwingUtilities;
+import javax.swing.SwingWorker;
+import javax.swing.Timer;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 import javax.swing.table.DefaultTableCellRenderer;
@@ -35,15 +45,29 @@ import Model.User;
  */
 public class ScrollPane {
 
+	//time between thread checking if any update to be done to the Jtable for "Current Viewer" tab
+	private static final int UPDATE_SEC = 25;
+	//controller
 	private MyBot theBot;
+	//interface to map of all user and points
 	private MyBotUserPoints allUserNPoints;
+	//array of all users currently watching channel
 	private User[] curU;
+	//dtm used for "Current Viewer" & "Users" tab only (due to JTable header and cell format)
 	private DefaultTableModel generalModel;
+	//dtm used for "Version" tab only
 	private DefaultTableModel versionModel;
+	//JTable used to display data
 	private JTable table;
+	//wrapper class for JTable to be scroll-able
 	private JScrollPane scrollPane;
+	//PropertyChange to inform other GUI-components something is being clicked on the JTable
 	private JLabel flag;
+	//data in the JTable
 	private Object[][] input;
+	//timer for thread to check if there's any updates to the user watching the channel
+	private Timer timer;
+	//row in JTable being clicked currently
 	private int row;
 
 	/**
@@ -60,6 +84,10 @@ public class ScrollPane {
 		allUserNPoints = bot.getAllUnP();
 		curU = bot.getCurUsers();
 		
+		if (para.equals("viewer")) {
+			setTime(para);
+		}
+		
 		row = -1;
 		Object[][] data = getList(para);
 		String[] header = getHeader(para);
@@ -68,7 +96,6 @@ public class ScrollPane {
 		//Note: this DefaultTableModel is used only for User/Current Viewer tab, NOT for Version tab!
 		generalModel = new DefaultTableModel(data, header) {
 			private static final long serialVersionUID = -1411446165832277578L;
-
 			@Override
 			public boolean isCellEditable(int row, int column) {
 				//make all cells editable = false
@@ -97,7 +124,6 @@ public class ScrollPane {
 		//Note: This DefaultTableModel is for Version tab ONLY!
 		versionModel = new DefaultTableModel(data, header) {
 			private static final long serialVersionUID = -1411446165832277578L;
-
 			@Override
 			public boolean isCellEditable(int row, int column) {
 				//make all cells editable = false
@@ -127,6 +153,29 @@ public class ScrollPane {
 		scrollPane = new JScrollPane(table);
 		table.setFillsViewportHeight(true);
 	} //Table
+	
+	/**
+	 * Initialize timer and set up thread to check for updates in data based on timer.
+	 * 
+	 * @param para 
+	 */
+	private void setTime(final String para) {
+		int delay = UPDATE_SEC * 1000;
+		ActionListener checkUpdate = new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				final User[] now = theBot.getCurUsers();
+				CheckCurrentWatcher update = new CheckCurrentWatcher(curU, now, generalModel, allUserNPoints);
+				update.execute();
+				curU = Arrays.copyOf(now, now.length);
+				System.out.println(UPDATE_SEC + "s has passed!");
+			}
+		};
+		timer = new Timer(delay, checkUpdate);
+		timer.start();
+		System.out.println("SwingWorkerThread Timer START!");
+
+	} //setTime
 	
 	/**
 	 * Using DefaultTableCellRenderer to accomplish:
@@ -284,6 +333,18 @@ public class ScrollPane {
 		} 
 		return data;
 	} //getList
+	
+	/**
+	 * Stop timer updating TableModel, used when quitting program.
+	 * 
+	 * @return time stopped status = true
+	 */
+	public boolean stopUpdateTimer() {
+		if (timer != null) {
+			timer.stop();
+		}
+		return true;
+	} //stopUpdateTimer
 
 	/**
 	 * This is a JLabel made by caller with added propertyChangeListener. When this label
@@ -334,4 +395,132 @@ public class ScrollPane {
 	public JScrollPane getScrollPane() {
 		return scrollPane;
 	} //getScrollPane
-} //class
+	
+	/////////////////////////////////////INNER CLASS: SWINGWORKER FOR UPDATING JTABLE///////////////////////
+	
+	/**
+	 * This is a separate "thread" to handle 1) finding the difference between previous and current arrays of 
+	 * stream viewers based on timer call, 2) update JTable/TableModel according to result. Due to the potential
+	 * time-consuming calculation, a separate thread is introduced in case of GUI-lock.
+	 * 
+	 * @author Ching-Ting Huang
+	 * @version 05/20/2014
+	 */
+	private class CheckCurrentWatcher extends SwingWorker<UpdateLists, Integer> {
+		
+		//list of users before most recent timer is called
+		private User[] prev;
+		//list of users after most recent timer is called
+		private User[] now;
+		//model used currently for JTable
+		private DefaultTableModel model;
+		//list of all user and their points for updating purposes
+		private MyBotUserPoints munp;
+		
+		/**
+		 * Initialize fields.
+		 * 
+		 * @param current is the array of users before most recent timer interrupt.
+		 * @param newArray is the array of users after most recent timer interrupt.
+		 * @param dtm is the DefaultTableModel being used on JTable currently.
+		 * @param unp is the interface to the Map of User-to-points.
+		 */
+		private CheckCurrentWatcher(User[] current, User[] newArray, DefaultTableModel dtm, MyBotUserPoints unp) {
+			prev = current.clone();
+			now = newArray.clone();
+			model = dtm;
+			munp = unp;
+		} //constructor
+		
+		/**
+		 * Perform 'diff' operation on past and current list of viewers and get 2 lists of users: 1) additional
+		 * users join the channel or 2) users who left the channel.
+		 */
+		@Override
+		protected UpdateLists doInBackground() throws Exception {
+			//parse 2 arrays to find if any people join/left channel
+			UpdateLists lists = new UpdateLists();
+			Set<User> tmp_prev = new HashSet<User> (Arrays.asList(prev));
+			Set<User> tmp_now = new HashSet<User> (Arrays.asList(now));
+			Set<User> common = new HashSet<User>(tmp_prev);	
+			
+			common.retainAll(tmp_now);			//common elements between two sets
+			tmp_prev.removeAll(common);			//take off common element from prev_set
+			tmp_now.removeAll(common);			//take off common element from now_set
+			
+			if (tmp_prev.size() > 0) {
+				lists.left.addAll(tmp_prev);	//list of people left channel
+			}
+			
+			if (tmp_now.size() > 0) {
+				lists.join.addAll(tmp_now);		//list of people joined channel
+			}
+			
+			return lists;
+		} //doInBackground
+		
+		/**
+		 * Roll out update based on "joined-list" and "left-list" to TableModel so JTable can be updated.
+		 */
+		@Override
+		protected void done() {
+			//update TableModel/JTable for new information based on two lists
+			try {
+				UpdateLists results = get();
+				List<User> join = results.join;
+				List<User> left = results.left;
+				Map<User, Integer> unp = munp.getUserMap();
+				
+				if (join.size() > 0) {
+					for (int i = 0; i < join.size(); i++) {
+						Object[] data = new Object[5];
+						User u = join.get(i);
+						data[0] = munp.getRank(u.getNick());
+						data[1] = u.getNick();
+						if (unp.containsKey(u)) {
+							data[2] = unp.get(u);
+						} else {
+							data[2] = "N/A";
+						}
+						data[3] = "No";
+						data[4] = "No";
+						model.addRow(data);
+					}
+				}
+				
+				if (left.size() > 0) {
+					for (int j = 0; j < left.size(); j++) {
+						User u = left.get(j);
+						for (int k = 0; k < model.getRowCount(); k++) {
+							String name = (String) model.getValueAt(k, 1);
+							if (name.equals(u.getNick())) {
+								model.removeRow(k);
+							}
+						}
+					}
+				}
+			} catch (Exception e) {
+				e.printStackTrace();
+			}
+		} //done
+	} //Inner: (CheckCurrentWatcher) SwingWorker
+	
+	//////////////////////////////////UTILITY CLASS///////////////////////////////////////////
+	
+	/**
+	 * This class captures two lists: a list of additional viewers watching the stream that were not watching since the
+	 * most recent call from timer, and a list of viewers who left the stream.
+	 * 
+	 * @author Ching-Ting Huang
+	 * @version 05/20/2014
+	 */
+	private class UpdateLists {
+		private UpdateLists() {
+			join = new ArrayList<User>();
+			left = new ArrayList<User>();
+		}
+		
+		List<User> join;
+		List<User> left;
+	} //Inner: (UpdateLists) 
+} //Outer  class
