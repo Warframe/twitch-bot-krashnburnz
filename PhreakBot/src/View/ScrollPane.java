@@ -30,6 +30,8 @@ import javax.swing.SwingWorker;
 import javax.swing.Timer;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
+import javax.swing.event.TableModelEvent;
+import javax.swing.event.TableModelListener;
 import javax.swing.table.AbstractTableModel;
 import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.DefaultTableModel;
@@ -46,40 +48,93 @@ import Model.User;
  */
 public class ScrollPane {
 
-	//time between thread checking if any update to be done to the Jtable for "Current Viewer" tab
+	/**
+	 * time between thread checking if any update to be done to the Jtable for "Current Viewer" tab.
+	 */
 	private static final int UPDATE_SEC = 25;
 	
-	private static final int EMPTY_ROW_COUNT = 15;
+	/**
+	 * when tick==TICK_WAIT, JTable will force a repaint to keep up with accumulated point updates.
+	 */
+	private static final int TICK_WAIT = 8;
 	
-	private static boolean curUserEmpty = false;
-	private static boolean allUserEmpty = false;
+	/**
+	 * counter to force JTable redraw after tick reach TICK_WAIT.
+	 */
+	private static int tick = 0;
 	
-	//controller
+	/**
+	 * check if current viewer list in controller is empty or not.
+	 */
+	private static boolean curUserEmpty = true;
+	
+	/**
+	 * check if all user list in controller is empty or not.
+	 */
+	private static boolean allUserEmpty = true;
+	
+	/**
+	 * controller.
+	 */
 	private MyBot theBot;
-	//interface to map of all user and points
+	
+	/**
+	 * interface to map of all user and points.
+	 */
 	private MyBotUserPoints allUserNPoints;
-	//array of all users currently watching channel
+	
+	/**
+	 * array of all users currently watching channel.
+	 */
 	private User[] curU;
-	//dtm used for "Current Viewer" & "Users" tab only (due to JTable header and cell format)
+	
+	/**
+	 * dtm used for "Current Viewer" & "Users" tab only (due to JTable header and cell format).
+	 */
 	private DefaultTableModel generalModel;
-	//dtm used for "Version" tab only
+	
+	/**
+	 * dtm used for "Version" tab only.
+	 */
 	private DefaultTableModel versionModel;
 	
+	/**
+	 * dtm used for "Current Viewer" when 1) program start up w/ no viewer, 
+	 * 2) no viewer present. Will be replaced if viewer exists.
+	 */
 	private DefaultTableModel emptyModel;
 	
-	//JTable used to display data
+	/**
+	 * JTable used to display data
+	 */
 	private JTable table;
-	//wrapper class for JTable to be scroll-able
+	
+	/**
+	 * wrapper class for JTable to be scroll-able.
+	 */
 	private JScrollPane scrollPane;
-	//PropertyChange to inform other GUI-components something is being clicked on the JTable
+	
+	/**
+	 * PropertyChange to inform other GUI-components something is being clicked on the JTable.
+	 */
 	private JLabel flag;
-	//data in the JTable
-	private Object[][] input;
-	//timer for thread to check if there's any updates to the user watching the channel
+	
+	/**
+	 * flag for checking if current viewer tab's JTable has been updated in order to update other misc. info 
+	 * given the updated JTable.
+	 */
+	private JLabel viewerUpdate;
+	
+	/**
+	 * timer for thread to check if there's any updates to the user watching the channel.
+	 */
 	private Timer timer;
-	//row in JTable being clicked currently
+	
+	/**
+	 * row in JTable being clicked currently.
+	 */
 	private int row;
-
+	
 	/**
 	 * Depending on the type of input, different list is being put into a 2D-array in order
 	 * to populate a JTable that will later be put into JScrollPane to be displayed.
@@ -92,20 +147,14 @@ public class ScrollPane {
 	public ScrollPane(final MyBot bot, final String para) {
 		theBot = bot;
 		checkData();
-		//allUserNPoints = bot.getAllUnP();
-		//curU = bot.getCurUsers();
-		
 		if (para.equals("viewer")) {
 			setTime();
 		}
-		
 		row = -1;
 		Object[][] data = getList(para);
-		String[] header = getHeader(para);
-		input = data;
-		
+		String[] header = getHeader(para);		
 		modelSetup(data, header, para);
-	} //Table
+	} //constructor (w/ flag)
 	
 	private void modelSetup(Object[][] data, String[] header, String para) {
 		//Note: this DefaultTableModel is used only for User/Current Viewer tab, NOT for Version tab!
@@ -137,14 +186,14 @@ public class ScrollPane {
 		};
 
 		//Note: This DefaultTableModel is for Version tab ONLY!
-		versionModel = new DefaultTableModel(data, header) {
+		versionModel = new DefaultTableModel() {
 			private static final long serialVersionUID = -1411446165832277578L;
 			@Override
 			public boolean isCellEditable(int row, int column) {
 				//make all cells editable = false
 				return false;
 			}
-
+			/*
 			@Override
 			public Class<?> getColumnClass(int colNum) {
 				switch (colNum) {
@@ -159,10 +208,11 @@ public class ScrollPane {
 				default:
 					return String.class;
 				}
-			}
+			}*/
 		};
+		versionModel.setColumnIdentifiers(header);
 
-		emptyModel = new DefaultTableModel(EMPTY_ROW_COUNT, header.length) {
+		emptyModel = new DefaultTableModel() {	
 			private static final long serialVersionUID = 7235000206295729521L;
 			@Override
 			public boolean isCellEditable(int row, int column) {
@@ -198,36 +248,39 @@ public class ScrollPane {
 			case "version": table = new JTable(versionModel);
 							break;
 		}
+		
+		((DefaultTableModel)table.getModel()).addTableModelListener(new TableModelListener() {
+			@Override
+			public void tableChanged(TableModelEvent e) {
+				if (viewerUpdate != null) {
+					viewerUpdate.setText(viewerUpdate.getText() + "+");
+				}
+			}
+		});
 
 		tableSetUp(table, para);
-		
-		if (para.equals("user")) {
-			if (!allUserEmpty) {
-				cellMod(table);
-			}
-		} else if (para.equals("viewer")) {
-			if (!curUserEmpty) {
-				cellMod(table);
-			}
+		if (para.equals("viewer") || para.equals("user")) {
+			cellMod(table);
 		}
-
 		scrollPane = new JScrollPane(table);
 		table.setFillsViewportHeight(true);
 	} //modelSetup
 	
+	/**
+	 * Sets boolean flag for whether data is available to be put into JTable or not. If they are available, 
+	 * fields are initialized. If not, boolean flags and place holders are set.
+	 */
 	private void checkData() {
-		if (theBot.getAllUnP().getUserMap().size() < 1) {
-			allUserEmpty = true;
-		} else {
+		if (theBot.getAllUnP().getUserMap().size() > 0) {
 			allUserEmpty = false;
-			allUserNPoints = theBot.getAllUnP();
 		}
+		allUserNPoints = theBot.getAllUnP();
 		
-		if (theBot.getCurUsers().length < 1) {
-			curUserEmpty = true;
-		} else {
+		if (theBot.getCurUsers().length > 0) {
 			curUserEmpty = false;
 			curU = theBot.getCurUsers();
+		} else {
+			curU = new User[0];
 		}
 	} //checkData
 	
@@ -239,23 +292,28 @@ public class ScrollPane {
 		ActionListener checkUpdate = new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
+				tick++;
 				final User[] now = theBot.getCurUsers();
-				CheckCurrentWatcher update = new CheckCurrentWatcher(curU, now, generalModel, allUserNPoints);
-				if (!curUserEmpty || now.length > 0) {
-					//CheckCurrentWatcher update = new CheckCurrentWatcher(curU, now, generalModel, allUserNPoints);
-					update.execute();
-					curU = Arrays.copyOf(now, now.length);
-					System.out.println("UPDATED! " + UPDATE_SEC + "s has passed!");
+				
+				if (tick < TICK_WAIT) {
+					CheckCurrentWatcher update = new CheckCurrentWatcher(curU, now);
+					if (!curUserEmpty || now.length > 0) {
+						update.execute();
+						curU = Arrays.copyOf(now, now.length);
+						table.validate();
+					} else {
+						update.cancel(true);
+					}
 				} else {
-					update.cancel(true);
-					System.out.println("NOT UPDATED!" + UPDATE_SEC + "s has passed!");
+					System.out.println("Updating CV...");
+					((DefaultTableModel)table.getModel()).fireTableDataChanged();
+					tick = 0;
 				}
 			}
 		};
 		timer = new Timer(delay, checkUpdate);
 		timer.start();
-		System.out.println("SwingWorkerThread Timer START!");
-
+		System.out.println("Check current viewer: start.");
 	} //setTime
 	
 	/**
@@ -270,13 +328,14 @@ public class ScrollPane {
 	private void cellMod(JTable table) {
 		for (int i = 0; i < table.getColumnCount(); i++) {
 			DefaultTableCellRenderer center = new DefaultTableCellRenderer() {
-
 				private static final long serialVersionUID = -3894436645096493165L;
-
 				@Override
 				public Component getTableCellRendererComponent(JTable table,
-						Object value, boolean isSelected, boolean hasFocus, int row, int column) {
-					
+															   Object value, 
+															   boolean isSelected, 
+															   boolean hasFocus, 
+															   int row, 
+															   int column) {
 					Component c = super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
 					if (value.toString().equals("Yes")) {
 						c.setForeground(Color.GREEN);
@@ -303,7 +362,7 @@ public class ScrollPane {
 		table.setDragEnabled(false);
 		table.setRowSelectionAllowed(true);
 		table.setShowHorizontalLines(false);
-		table.setShowVerticalLines(true);
+		table.setShowVerticalLines(false);
 		table.setAutoCreateRowSorter(true);
 		table.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
 		
@@ -420,27 +479,39 @@ public class ScrollPane {
 	/**
 	 * Stop timer updating TableModel, used when quitting program.
 	 * 
-	 * @return time stopped status = true
+	 * @return timer still running = false
 	 */
 	public boolean stopUpdateTimer() {
 		if (timer != null) {
 			timer.stop();
+			return timer.isRunning();
 		}
-		return true;
+		return false;
 	} //stopUpdateTimer
 
 	/**
 	 * This is a JLabel made by caller with added propertyChangeListener. When this label
 	 * is passed into this class as a field and its text is later changed when a row is
 	 * selected in the table, the propertyChangeListener will notify the change on the 
-	 * caller side.
+	 * caller side (Flag to catch row selection in JTable).
 	 * 
 	 * @param label is the 'flag' to notify the caller a row has been selected in the table.
-	 * @author Ching-Ting Huang
 	 */
 	public void setFlag(final JLabel label) {
 		flag = label;
 	} //setFlag
+	
+	/**
+	 * This is a JLabel made by caller with added propertyChangeListener. When this label
+	 * is passed into this class as a field and its text is later changed when a row is
+	 * selected in the table, the propertyChangeListener will notify the change on the 
+	 * caller side (Flag to catch JTable updates).
+	 * 
+	 * @param label is the 'flag' to notify the caller data in JTable has been updated.
+	 */
+	public void setCVChecker(final JLabel label) {
+		viewerUpdate = label;
+	} //setCVChecker
 
 	/**
 	 * The current selected row in the table.
@@ -453,21 +524,68 @@ public class ScrollPane {
 	} //getRowNum
 
 	/**
-	 * Gets the specified row in the 2D-array
+	 * Gets the data at specified row & column.
 	 * 
-	 * @return the row of data from the 2D-array.
-	 * @author Ching-Ting Huang
+	 * @param row of table.
+	 * @param column of table.
+	 * @return the cell data.
 	 */
-	public Object[] getRow(final int row) {
-		int size = input[row].length;
-		Object[] result = new Object[size];
-		for (int i = 0; i < size; i++) {
-			if (input[row][i] != null) {
-				result[i] = input[row][i];
-			}
-		}
-		return result;
+	public Object getData(final int row, final int column) {
+		return ((DefaultTableModel)table.getModel()).getValueAt(row, column);
 	} //getInput
+	
+	/**
+	 * Provide functionality to scroll JTable to desired row. Used for searching.
+	 * 
+	 * @param row
+	 */
+	public void scrollTo(int row) {
+		int r = table.convertRowIndexToView(row);
+		table.scrollRectToVisible(table.getCellRect(r,  0,  true));
+	} //scrollTo
+	
+	/**
+	 * Provide functionality to highlight desired row. Used for searching.
+	 * 
+	 * @param row
+	 */
+	public void setFocusTo(int row) {
+		int r = table.convertRowIndexToView(row);
+		table.setRowSelectionInterval(r, r);
+	} //setFocusTo
+	
+	/**
+	 * This gets the number of rows there currently is in the JTable.
+	 * 
+	 * @return number of row in JTable.
+	 */
+	public int getNumRow() {
+		return ((DefaultTableModel)table.getModel()).getRowCount();
+	} //getNumRow
+	
+	/**
+	 * This gets the number of columns there currently is in the JTable.
+	 * 
+	 * @return number of column in JTable.
+	 */
+	public int getNumCol() {
+		return ((DefaultTableModel)table.getModel()).getColumnCount();
+	} //getNumCol
+	
+	/**
+	 * Let JTable to be updated with accurate information after UI update.
+	 * 
+	 * @param row row of JTable.
+	 * @param col column of JTable.
+	 * @param newpt program-user point input to be added/subtracted to a specific user based on selected row.
+	 * @return whether the operation is successful.
+	 */
+	public boolean updateTable(int row, int col, int newpt) {
+		//int r = table.convertRowIndexToView(row);
+		int oldpt = (int) ((DefaultTableModel) table.getModel()).getValueAt(row, col);
+		((DefaultTableModel)table.getModel()).setValueAt(oldpt + newpt, row, col);
+		return true;
+	} //updateTable
 
 	/**
 	 * Gets the current scrollpane.
@@ -478,10 +596,6 @@ public class ScrollPane {
 	public JScrollPane getScrollPane() {
 		return scrollPane;
 	} //getScrollPane
-	
-	public void updateTable() {
-		((AbstractTableModel) table.getModel()).fireTableCellUpdated(row, 2);
-	} //updateTable
 	
 	/////////////////////////////////////INNER CLASS: SWINGWORKER FOR UPDATING JTABLE///////////////////////
 	
@@ -499,10 +613,6 @@ public class ScrollPane {
 		private User[] prev;
 		//list of users after most recent timer is called
 		private User[] now;
-		//model used currently for JTable
-		private DefaultTableModel model;
-		//list of all user and their points for updating purposes
-		private MyBotUserPoints munp;
 		
 		/**
 		 * Initialize fields.
@@ -512,11 +622,9 @@ public class ScrollPane {
 		 * @param dtm is the DefaultTableModel being used on JTable currently.
 		 * @param unp is the interface to the Map of User-to-points.
 		 */
-		private CheckCurrentWatcher(User[] current, User[] newArray, DefaultTableModel dtm, MyBotUserPoints unp) {
-			prev = current != null? current.clone() : new User[0];
-			now = newArray != null? newArray.clone() : new User[0];
-			model = dtm;
-			munp = unp;
+		private CheckCurrentWatcher(User[] current, User[] newArray) {
+			prev = current.length > 0 ? current.clone() : new User[0];
+			now = newArray.length > 0 ? newArray.clone() : new User[0];
 		} //constructor
 		
 		/**
@@ -543,6 +651,10 @@ public class ScrollPane {
 				lists.join.addAll(tmp_now);		//list of people joined channel
 			}
 			
+			if (tmp_prev.isEmpty() && tmp_now.isEmpty()) {
+				lists.left.clear();
+				lists.join.clear();
+			}
 			return lists;
 		} //doInBackground
 		
@@ -556,35 +668,57 @@ public class ScrollPane {
 				UpdateLists results = get();
 				List<User> join = results.join;
 				List<User> left = results.left;
-				Map<User, Integer> unp = munp.getUserMap();
+				Map<User, Integer> unp = allUserNPoints.getUserMap();
 				
-				if (join.size() > 0) {
-					for (int i = 0; i < join.size(); i++) {
-						Object[] data = new Object[5];
-						User u = join.get(i);
-						data[0] = munp.getRank(u.getNick());
-						data[1] = u.getNick();
-						if (unp.containsKey(u)) {
-							data[2] = unp.get(u);
-						} else {
-							data[2] = "N/A";
+				if (join.isEmpty() && left.isEmpty() && now.length > 0) {
+					//highly doubtful anything will make it pass this if-case, but it's here in case something is wrong
+					if (((DefaultTableModel) table.getModel()).getDataVector().isEmpty()) {
+						for (int z = 0; z < now.length; z++) {
+							Object[] data = new Object[5];
+							User u = now[z];
+							data[0] = allUserNPoints.getRank(u.getNick());
+							data[1] = u.getNick();
+							if (unp.containsKey(u)) {
+								data[2] = unp.get(u);
+							} else {
+								data[2] = "N/A";
+							}
+							data[3] = "No";
+							data[4] = "No";
+							((DefaultTableModel) table.getModel()).insertRow(0, data);
 						}
-						data[3] = "No";
-						data[4] = "No";
-						model.addRow(data);
 					}
-				}
-				
-				if (left.size() > 0) {
-					for (int j = 0; j < left.size(); j++) {
-						User u = left.get(j);
-						for (int k = 0; k < model.getRowCount(); k++) {
-							String name = (String) model.getValueAt(k, 1);
-							if (name.equals(u.getNick())) {
-								model.removeRow(k);
+					
+				} else {
+					
+ 					if (join.size() > 0) {
+						for (int i = 0; i < join.size(); i++) {
+							Object[] data = new Object[5];
+							User u = join.get(i);
+							data[0] = allUserNPoints.getRank(u.getNick());
+							data[1] = u.getNick();
+							if (unp.containsKey(u)) {
+								data[2] = unp.get(u);
+							} else {
+								data[2] = "N/A";
+							}
+							data[3] = "No";
+							data[4] = "No";
+							((DefaultTableModel) table.getModel()).insertRow(0, data);
+						}
+					} //join size j > 0
+					
+					if (left.size() > 0) {
+						for (int j = 0; j < left.size(); j++) {
+							User u = left.get(j);
+							for (int k = 0; k < ((DefaultTableModel) table.getModel()).getRowCount(); k++) {
+								String name = (String) ((DefaultTableModel) table.getModel()).getValueAt(k, 1);
+								if (name.equals(u.getNick())) {
+									((DefaultTableModel) table.getModel()).removeRow(k);
+								}
 							}
 						}
-					}
+					} //left size > 0
 				}
 			} catch (Exception e) {
 				e.printStackTrace();

@@ -6,12 +6,16 @@ import java.awt.FlowLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 
+import javax.swing.BorderFactory;
 import javax.swing.BoxLayout;
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
+import javax.swing.JSplitPane;
+import javax.swing.JTable;
+import javax.swing.table.DefaultTableModel;
 
 import Model.MyBot;
 
@@ -23,26 +27,58 @@ import Model.MyBot;
 public class Version extends JPanel {
 	
 	private static final long serialVersionUID = -2544375717703845827L;
+	
+	/**
+	 * The controller.
+	 */
 	private MyBot theBot;
+	/**
+	 * The scroll pane containing all revision of the program.
+	 */
+	private ScrollPane scroll;
+	
 	
 	public Version(MyBot bot) {
 		theBot = bot;
-		//scroll = new ScrollPane(theBot, "viewer");
+		//scroll = new ScrollPane(theBot, "version");
 		setup();
 	}
 	
 	private void setup() {
-		JScrollPane pane = new JScrollPane();//scroll.getScrollPane();
+		DefaultTableModel dtm = new DefaultTableModel() {
+			private static final long serialVersionUID = -1411446165832277578L;
+			@Override
+			public boolean isCellEditable(int row, int column) {
+				//make all cells editable = false
+				return false;
+			}
+		};
+		dtm.setColumnIdentifiers(new String[]{"Version", "Released"});
+		JTable table = new JTable(dtm);
+		JScrollPane pane = new JScrollPane(table);
+				//scroll.getScrollPane();
 		pane.setWheelScrollingEnabled(true);
 		
+		
+		JSplitPane split = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, pane, infoPanel());
+		split.setDividerLocation(200);
 		setLayout(new BorderLayout());
-		//add(pane, BorderLayout.CENTER);
+		add(split, BorderLayout.CENTER);
 		
 		JPanel tmp = new JPanel();
 		tmp.add(new JLabel("To Be Implemented."));
-		add(tmp, BorderLayout.CENTER);
+		//add(tmp, BorderLayout.CENTER);
 		add(misc(), BorderLayout.SOUTH);
 	} //generalSetup
+	
+	
+	private Container infoPanel() {
+		JPanel info = new JPanel();
+		info.setBorder(BorderFactory.createCompoundBorder(
+				BorderFactory.createTitledBorder("Description"),
+				BorderFactory.createEmptyBorder(5,5,5,5)));
+		return info;
+	} //infoPanel
 	
 	private Container misc() {
 		Container border = new Container();

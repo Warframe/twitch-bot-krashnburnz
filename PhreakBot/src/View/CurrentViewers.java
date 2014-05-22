@@ -55,6 +55,11 @@ public class CurrentViewers extends JPanel {
 	 */
 	private JLabel id;
 	
+	
+	
+	private JLabel viewerNum;
+	private JLabel totalPt;
+	
 	/**
 	 * After selecting a viewer from the scroll pane, this shows whether this viewer is a subscriber.
 	 */
@@ -82,8 +87,10 @@ public class CurrentViewers extends JPanel {
 	 */
 	public CurrentViewers(MyBot bot) {
 		my_bot = bot;
-		scroll = //my_bot.getCurUsers().length == 0 ? null : 
-			new ScrollPane(my_bot, "viewer");
+		scroll = new ScrollPane(my_bot, "viewer");
+		viewerNum = new JLabel("0");
+		totalPt = new JLabel("0");
+		id = new JLabel("Please select a user.");
 		setup();
 	} //constructor
 	
@@ -92,24 +99,41 @@ public class CurrentViewers extends JPanel {
 	 */
 	private void setup() {
 		JScrollPane pane = scroll == null ? noViewerPanel() : scroll.getScrollPane();
-		final JLabel flag = new JLabel("users");
+		final JLabel flag = new JLabel("flag");
 		flag.addPropertyChangeListener(new PropertyChangeListener() {
-
 			@Override
 			public void propertyChange(PropertyChangeEvent e) {
 				if (e.getSource() == flag) {
 					isSelected = true;
-					Object[] data = scroll.getRow(scroll.getSelectedRowNum());
-					id.setText((String) data[1]);
-					String sub = (String) data[3];
+					int selectedRow = scroll.getSelectedRowNum();
+					id.setText((String) scroll.getData(selectedRow, 1));
+					String sub = (String) scroll.getData(selectedRow, 3);
 					isASub = sub.equals("Yes") ? true : false;
-					String mod = (String) data[4];
+					String mod = (String) scroll.getData(selectedRow, 4);
 					isAMod = mod.equals("Yes") ? true : false;
 					
 				}
 			}
 		});
-		//scroll.setFlag(flag);
+		
+		final JLabel checker = new JLabel("checker");
+		checker.addPropertyChangeListener(new PropertyChangeListener() {
+			@Override
+			public void propertyChange(PropertyChangeEvent e) {
+				if (e.getSource() == checker) {
+					int viewers = scroll.getNumRow();
+					int sum = 0;
+					
+					viewerNum.setText("" + viewers);
+					for (int i = 0; i < viewers; i++) {
+						sum += (int) scroll.getData(i, 2);
+					}
+					totalPt.setText("" + sum);
+				}
+			}
+		});
+		scroll.setFlag(flag);
+		scroll.setCVChecker(checker);
 		
 		setLayout(new BorderLayout());
 		add(pane, BorderLayout.CENTER);
@@ -142,8 +166,9 @@ public class CurrentViewers extends JPanel {
 	private Container pointManagement() {
 		Container flow = new JPanel(new FlowLayout());
 		final JTextField points = new JTextField(MESSAGE, 18);
-		JButton add = new JButton("+ Points");
-		JButton sub = new JButton("- Points");
+		final JButton add = new JButton("+ Points");
+		final JButton sub = new JButton("- Points");
+		final JButton addAll = new JButton("Generous");
 		
 		points.setForeground(Color.GRAY);
 		points.addMouseListener(new MouseAdapter() {
@@ -160,9 +185,10 @@ public class CurrentViewers extends JPanel {
 				if (isSelected) {
 					if (input != null && !input.isEmpty()) {
 						if (!input.equals(MESSAGE)) {
-							try {				//NEED TO ADD POINTS TO THE USER HERE!!!!!!!!!!!!!!!!!!!!!!
+							try {				
 								int p = Integer.parseInt(input);
 								my_bot.getAllUnP().incrementTankerPoints(id.getText(), p);
+								scroll.updateTable(scroll.getSelectedRowNum(), 2, p);
 								JOptionPane.showMessageDialog(null, p + " points has been added to " + id.getText() + "!", "Update", JOptionPane.INFORMATION_MESSAGE);
 								points.setForeground(Color.GRAY);
 								points.setText(MESSAGE);
@@ -187,9 +213,10 @@ public class CurrentViewers extends JPanel {
 				if (isSelected) {
 					if (input != null && !input.isEmpty()) {
 						if (!input.equals(MESSAGE)) {
-							try {				//NEED TO ADD POINTS TO THE USER HERE!!!!!!!!!!!!!!!!!!!!!!
+							try {				
 								int p = Integer.parseInt(input);
 								my_bot.getAllUnP().incrementTankerPoints(id.getText(), -p);
+								scroll.updateTable(scroll.getSelectedRowNum(), 2, -p);								
 								JOptionPane.showMessageDialog(null, p + " points has been taken from " + id.getText() + "!", "Update", JOptionPane.INFORMATION_MESSAGE);
 								points.setForeground(Color.GRAY);
 								points.setText(MESSAGE);
@@ -207,9 +234,40 @@ public class CurrentViewers extends JPanel {
 			}
 		});
 		
+		addAll.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				if (e.getSource() == addAll) {
+					if (my_bot.getCurUsers().length > 0) {
+						int response;
+						try {
+							int points = Integer.parseInt(JOptionPane.showInputDialog("Feelin' generous! Points give away time!"));
+							if (points > 0) {
+								response = JOptionPane.showConfirmDialog(null, "Ready to be worshipped?", "Point GIVEaway", JOptionPane.YES_NO_OPTION);
+		
+							} else {
+								response = JOptionPane.showConfirmDialog(null, "Are you suuure? That minus sign will produce many sad faces...", "Point TAKEaway", JOptionPane.YES_NO_OPTION);
+							}
+							
+							if (response == JOptionPane.YES_OPTION) {
+								User[] currentUser = my_bot.getCurUsers();
+								for (int i = 0; i < currentUser.length; i++) {
+									my_bot.getAllUnP().incrementTankerPoints(currentUser[i].getNick(), points);
+									scroll.updateTable(i, 2, points);
+								}
+							}
+						} catch (NumberFormatException ex) {
+							JOptionPane.showMessageDialog(null, "Integer points would be nice.", "Wrong Format", JOptionPane.INFORMATION_MESSAGE);
+						}
+					}
+				}
+			}
+		});
+		
 		flow.add(points);
 		flow.add(add);
 		flow.add(sub);
+		flow.add(addAll);
 		return flow;
 	} //pointManagement
 	
@@ -226,9 +284,8 @@ public class CurrentViewers extends JPanel {
 		Container viewers = new Container();
 		viewers.setLayout(new FlowLayout(FlowLayout.LEFT));
 		JLabel lbview = new JLabel("Total Viewers:");
-		JLabel txview = new JLabel("" + my_bot.getCurUsers().length);
 		viewers.add(lbview);
-		viewers.add(txview);
+		viewers.add(viewerNum);
 		
 		Container mods = new Container();
 		mods.setLayout(new FlowLayout(FlowLayout.LEFT));
@@ -240,20 +297,9 @@ public class CurrentViewers extends JPanel {
 		Container vpoints = new Container();
 		vpoints.setLayout(new FlowLayout(FlowLayout.LEFT));
 		JLabel lbvpt = new JLabel("Total Points:");
-		int total = 0;
 		JLabel txvpt = new JLabel();
-		if (my_bot.getCurUsers().length > 0) {
-			User[] current = my_bot.getCurUsers();
-			Map<User, Integer> map = my_bot.getAllUnP().getUserMap();
-			for (int i = 0; i < current.length; i++) {
-				total += map.get(current[i]);
-			}
-			txvpt = new JLabel("" + total);
-		} else {
-			txvpt = new JLabel("" + my_bot.getCurUsers().length);
-		}
 		vpoints.add(lbvpt);
-		vpoints.add(txvpt);
+		vpoints.add(totalPt);
 		
 		Container vsubs = new Container();
 		vsubs.setLayout(new FlowLayout(FlowLayout.LEFT));
@@ -319,4 +365,13 @@ public class CurrentViewers extends JPanel {
 		grid.add(isSpecial);
 		return grid;
 	} //other
+	
+	/**
+	 * Used for shutting down program.
+	 * 
+	 * @return whether the timer is still running.
+	 */
+	public boolean stopTimer() {
+		return scroll.stopUpdateTimer();
+	} //stopTimer
 } //CurrentViewers

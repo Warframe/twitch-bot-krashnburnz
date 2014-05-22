@@ -741,6 +741,11 @@ public class MyBotApp extends JFrame implements Observer, Runnable{		//can't ext
 				System.out.println("We dont need to backup.");
 				savedBackupInt = 0;
 			}
+			
+			if (currentViewerPanel instanceof CurrentViewers) {
+				((CurrentViewers) currentViewerPanel).stopTimer();
+			}
+			
 			MyBotApp.this.dispose();
 			//SAVE BACKUP IF OPTIONS SELECTED
 			if(loginWindow.getSaveCreds()) { //if save credentials is clicked, save data to file

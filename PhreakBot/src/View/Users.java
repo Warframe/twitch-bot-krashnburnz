@@ -13,6 +13,7 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 
 
+
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
 import javax.swing.JLabel;
@@ -116,14 +117,15 @@ public class Users extends JPanel {
 			public void propertyChange(PropertyChangeEvent e) {
 				if (e.getSource() == flag) {
 					isSelected = true;
-					Object[] data = scroll.getRow(scroll.getSelectedRowNum());
-					id.setText((String) data[1]);
-					pt.setText(String.valueOf(data[2]));
-					String sub = (String) data[3];
-					isASub = sub.equals("Yes") ? true : false;
-					String mod = (String) data[4];
-					isAMod = mod.equals("Yes") ? true : false;
 					
+					int selectedRow = scroll.getSelectedRowNum();
+					id.setText((String) scroll.getData(selectedRow, 1));
+					pt.setText(String.valueOf(scroll.getData(selectedRow, 2)));
+					String sub = (String) scroll.getData(selectedRow, 3);
+					isASub = sub.equals("Yes") ? true : false;
+					String mod = (String) scroll.getData(selectedRow, 4);
+					isAMod = mod.equals("Yes") ? true : false;
+
 					//join date to-be-implemented
 					//e-mail to-be-implemented
 				}
@@ -158,6 +160,7 @@ public class Users extends JPanel {
 		final JTextField points = new JTextField(MESSAGE, 18);
 		JButton add = new JButton("+ Points");
 		JButton sub = new JButton("- Points");
+		JButton search = new JButton("Search");
 		
 		points.setForeground(Color.GRAY);
 		points.addMouseListener(new MouseAdapter() {
@@ -174,10 +177,11 @@ public class Users extends JPanel {
 				if (isSelected) {
 					if (input != null && !input.isEmpty()) {
 						if (!input.equals(MESSAGE)) {
-							try {				//NEED TO ADD POINTS TO THE USER HERE!!!!!!!!!!!!!!!!!!!!!!
+							try {				
 								int p = Integer.parseInt(input);
 								my_bot.getAllUnP().incrementTankerPoints(id.getText(), p);
-								scroll.updateTable();
+								scroll.updateTable(scroll.getSelectedRowNum(), 2, p);
+								
 								JOptionPane.showMessageDialog(null, p + " points has been added to " + id.getText() + "!", "Update", JOptionPane.INFORMATION_MESSAGE);
 								points.setForeground(Color.GRAY);
 								points.setText(MESSAGE);
@@ -202,11 +206,10 @@ public class Users extends JPanel {
 				if (isSelected) {
 					if (input != null && !input.isEmpty()) {
 						if (!input.equals(MESSAGE)) {
-							try {				//NEED TO ADD POINTS TO THE USER HERE!!!!!!!!!!!!!!!!!!!!!!
+							try {				
 								int p = Integer.parseInt(input);
 								my_bot.getAllUnP().incrementTankerPoints(id.getText(), -p);
-								scroll.updateTable();
-								JOptionPane.showMessageDialog(null, p + " points has been taken from " + id.getText() + "!", "Update", JOptionPane.INFORMATION_MESSAGE);
+								scroll.updateTable(scroll.getSelectedRowNum(), 2, -p);								JOptionPane.showMessageDialog(null, p + " points has been taken from " + id.getText() + "!", "Update", JOptionPane.INFORMATION_MESSAGE);
 								points.setForeground(Color.GRAY);
 								points.setText(MESSAGE);
 
@@ -223,9 +226,30 @@ public class Users extends JPanel {
 			}
 		});
 		
+		search.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				boolean found = false;
+				String input = JOptionPane.showInputDialog("Please enter the username you are searching for");
+				for (int i = 0; i < scroll.getNumRow() - 1; i++) {
+					if (input.equals(scroll.getData(i, 1))) {
+						scroll.scrollTo(i);
+						scroll.setFocusTo(i);
+						found = true;
+					}
+				}
+				
+				if (!found) {
+					JOptionPane.showMessageDialog(null, "No match found. Please try again.", "Search Result", JOptionPane.INFORMATION_MESSAGE);
+				}
+			}
+		});
+		
+		
 		flow.add(points);
 		flow.add(add);
 		flow.add(sub);
+		flow.add(search);
 		return flow;
 	} //pointManagement
 	
