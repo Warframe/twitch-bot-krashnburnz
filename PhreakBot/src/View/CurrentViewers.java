@@ -82,7 +82,8 @@ public class CurrentViewers extends JPanel {
 	 */
 	public CurrentViewers(MyBot bot) {
 		my_bot = bot;
-		scroll = my_bot.getCurUsers().length == 0 ? null : new ScrollPane(my_bot, "viewer");
+		scroll = //my_bot.getCurUsers().length == 0 ? null : 
+			new ScrollPane(my_bot, "viewer");
 		setup();
 	} //constructor
 	
@@ -161,6 +162,7 @@ public class CurrentViewers extends JPanel {
 						if (!input.equals(MESSAGE)) {
 							try {				//NEED TO ADD POINTS TO THE USER HERE!!!!!!!!!!!!!!!!!!!!!!
 								int p = Integer.parseInt(input);
+								my_bot.getAllUnP().incrementTankerPoints(id.getText(), p);
 								JOptionPane.showMessageDialog(null, p + " points has been added to " + id.getText() + "!", "Update", JOptionPane.INFORMATION_MESSAGE);
 								points.setForeground(Color.GRAY);
 								points.setText(MESSAGE);
@@ -187,6 +189,7 @@ public class CurrentViewers extends JPanel {
 						if (!input.equals(MESSAGE)) {
 							try {				//NEED TO ADD POINTS TO THE USER HERE!!!!!!!!!!!!!!!!!!!!!!
 								int p = Integer.parseInt(input);
+								my_bot.getAllUnP().incrementTankerPoints(id.getText(), -p);
 								JOptionPane.showMessageDialog(null, p + " points has been taken from " + id.getText() + "!", "Update", JOptionPane.INFORMATION_MESSAGE);
 								points.setForeground(Color.GRAY);
 								points.setText(MESSAGE);

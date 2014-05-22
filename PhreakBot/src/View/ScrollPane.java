@@ -30,6 +30,7 @@ import javax.swing.SwingWorker;
 import javax.swing.Timer;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
+import javax.swing.table.AbstractTableModel;
 import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.DefaultTableModel;
 
@@ -47,6 +48,12 @@ public class ScrollPane {
 
 	//time between thread checking if any update to be done to the Jtable for "Current Viewer" tab
 	private static final int UPDATE_SEC = 25;
+	
+	private static final int EMPTY_ROW_COUNT = 15;
+	
+	private static boolean curUserEmpty = false;
+	private static boolean allUserEmpty = false;
+	
 	//controller
 	private MyBot theBot;
 	//interface to map of all user and points
@@ -57,6 +64,9 @@ public class ScrollPane {
 	private DefaultTableModel generalModel;
 	//dtm used for "Version" tab only
 	private DefaultTableModel versionModel;
+	
+	private DefaultTableModel emptyModel;
+	
 	//JTable used to display data
 	private JTable table;
 	//wrapper class for JTable to be scroll-able
@@ -81,18 +91,23 @@ public class ScrollPane {
 	 */
 	public ScrollPane(final MyBot bot, final String para) {
 		theBot = bot;
-		allUserNPoints = bot.getAllUnP();
-		curU = bot.getCurUsers();
+		checkData();
+		//allUserNPoints = bot.getAllUnP();
+		//curU = bot.getCurUsers();
 		
 		if (para.equals("viewer")) {
-			setTime(para);
+			setTime();
 		}
 		
 		row = -1;
 		Object[][] data = getList(para);
 		String[] header = getHeader(para);
 		input = data;
-
+		
+		modelSetup(data, header, para);
+	} //Table
+	
+	private void modelSetup(Object[][] data, String[] header, String para) {
 		//Note: this DefaultTableModel is used only for User/Current Viewer tab, NOT for Version tab!
 		generalModel = new DefaultTableModel(data, header) {
 			private static final long serialVersionUID = -1411446165832277578L;
@@ -101,7 +116,7 @@ public class ScrollPane {
 				//make all cells editable = false
 				return false;
 			}
-			
+
 			@Override
 			public Class<?> getColumnClass(int colNum) {
 				switch (colNum) {
@@ -120,7 +135,7 @@ public class ScrollPane {
 				}
 			}
 		};
-		
+
 		//Note: This DefaultTableModel is for Version tab ONLY!
 		versionModel = new DefaultTableModel(data, header) {
 			private static final long serialVersionUID = -1411446165832277578L;
@@ -129,7 +144,7 @@ public class ScrollPane {
 				//make all cells editable = false
 				return false;
 			}
-			
+
 			@Override
 			public Class<?> getColumnClass(int colNum) {
 				switch (colNum) {
@@ -147,28 +162,94 @@ public class ScrollPane {
 			}
 		};
 
-		table = new JTable(generalModel);
+		emptyModel = new DefaultTableModel(EMPTY_ROW_COUNT, header.length) {
+			private static final long serialVersionUID = 7235000206295729521L;
+			@Override
+			public boolean isCellEditable(int row, int column) {
+				//make all cells editable = false
+				return false;
+			}
+
+			@Override
+			public Class<?> getColumnClass(int colNum) {
+				switch (colNum) {
+				case 0:
+					return Integer.class;
+				case 1:
+					return String.class;
+				case 2:
+					return Integer.class;
+				case 3: 
+					return String.class;
+				case 4: 
+					return String.class;
+				default:
+					return String.class;
+				}
+			}
+		};
+		emptyModel.setColumnIdentifiers(header);
+
+		switch (para) {
+			case "user": 	table = allUserEmpty ? new JTable(emptyModel) : new JTable(generalModel);
+							break;
+			case "viewer": 	table = curUserEmpty ? new JTable(emptyModel) : new JTable(generalModel);
+							break;
+			case "version": table = new JTable(versionModel);
+							break;
+		}
+
 		tableSetUp(table, para);
-		cellMod(table);
+		
+		if (para.equals("user")) {
+			if (!allUserEmpty) {
+				cellMod(table);
+			}
+		} else if (para.equals("viewer")) {
+			if (!curUserEmpty) {
+				cellMod(table);
+			}
+		}
+
 		scrollPane = new JScrollPane(table);
 		table.setFillsViewportHeight(true);
-	} //Table
+	} //modelSetup
+	
+	private void checkData() {
+		if (theBot.getAllUnP().getUserMap().size() < 1) {
+			allUserEmpty = true;
+		} else {
+			allUserEmpty = false;
+			allUserNPoints = theBot.getAllUnP();
+		}
+		
+		if (theBot.getCurUsers().length < 1) {
+			curUserEmpty = true;
+		} else {
+			curUserEmpty = false;
+			curU = theBot.getCurUsers();
+		}
+	} //checkData
 	
 	/**
 	 * Initialize timer and set up thread to check for updates in data based on timer.
-	 * 
-	 * @param para 
 	 */
-	private void setTime(final String para) {
+	private void setTime() {
 		int delay = UPDATE_SEC * 1000;
 		ActionListener checkUpdate = new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
 				final User[] now = theBot.getCurUsers();
 				CheckCurrentWatcher update = new CheckCurrentWatcher(curU, now, generalModel, allUserNPoints);
-				update.execute();
-				curU = Arrays.copyOf(now, now.length);
-				System.out.println(UPDATE_SEC + "s has passed!");
+				if (!curUserEmpty || now.length > 0) {
+					//CheckCurrentWatcher update = new CheckCurrentWatcher(curU, now, generalModel, allUserNPoints);
+					update.execute();
+					curU = Arrays.copyOf(now, now.length);
+					System.out.println("UPDATED! " + UPDATE_SEC + "s has passed!");
+				} else {
+					update.cancel(true);
+					System.out.println("NOT UPDATED!" + UPDATE_SEC + "s has passed!");
+				}
 			}
 		};
 		timer = new Timer(delay, checkUpdate);
@@ -208,7 +289,7 @@ public class ScrollPane {
 			center.setHorizontalAlignment(JLabel.CENTER);
 			table.getColumnModel().getColumn(i).setCellRenderer(center);
 		}
-	}
+	} //cellMod
 
 	/**
 	 * Sets up functions of the JTable: enable only row selection, set cell editable false,
@@ -256,7 +337,7 @@ public class ScrollPane {
 		
 		int count = 0;
 		for(Map.Entry<User, Integer> entry : unp.entrySet()) {
-			data[count][0] = theBot.getAllUnP().getRank(entry.getKey().getNick());
+			data[count][0] = allUserNPoints.getRank(entry.getKey().getNick());
 			data[count][1] = entry.getKey().getNick();
 			data[count][2] = entry.getValue();
 			data[count][3] = "No";
@@ -315,22 +396,24 @@ public class ScrollPane {
 	 * Depending on the input type, different lists are used to populate 2D array that
 	 * will be displayed on the JTable/JScrollPane.
 	 * 
-	 * @param type is the input type: conference(conf), program chair(pc), subprogram chair(spc),
-	 * 		  reviewer(rev), author(auth).
+	 * @param type is the input type: user, current viewer, version
 	 * @return 2D-array representation of the input list.
 	 * @author Ching-Ting Huang
 	 */
 	private Object[][] getList(final String type) {
 		Object[][] data = null;
-		if (type.equals("user")) {
-			data = putAllUserToArray();
-		} else if (type.equals("viewer")) {
-			data = putCurUserToArray();
+		
+		switch (type) {
+			case "user": 	data = allUserEmpty ? null : putAllUserToArray();
+							break;
+			case "viewer":	data = curUserEmpty? null : putCurUserToArray();
+							break;
+		}
+		
 		/*} else if (type.equals("version")) {
-			
-		} */
-			
-		} 
+		
+		} */	
+		 
 		return data;
 	} //getList
 	
@@ -396,6 +479,10 @@ public class ScrollPane {
 		return scrollPane;
 	} //getScrollPane
 	
+	public void updateTable() {
+		((AbstractTableModel) table.getModel()).fireTableCellUpdated(row, 2);
+	} //updateTable
+	
 	/////////////////////////////////////INNER CLASS: SWINGWORKER FOR UPDATING JTABLE///////////////////////
 	
 	/**
@@ -426,8 +513,8 @@ public class ScrollPane {
 		 * @param unp is the interface to the Map of User-to-points.
 		 */
 		private CheckCurrentWatcher(User[] current, User[] newArray, DefaultTableModel dtm, MyBotUserPoints unp) {
-			prev = current.clone();
-			now = newArray.clone();
+			prev = current != null? current.clone() : new User[0];
+			now = newArray != null? newArray.clone() : new User[0];
 			model = dtm;
 			munp = unp;
 		} //constructor

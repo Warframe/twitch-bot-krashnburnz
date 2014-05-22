@@ -176,6 +176,8 @@ public class Users extends JPanel {
 						if (!input.equals(MESSAGE)) {
 							try {				//NEED TO ADD POINTS TO THE USER HERE!!!!!!!!!!!!!!!!!!!!!!
 								int p = Integer.parseInt(input);
+								my_bot.getAllUnP().incrementTankerPoints(id.getText(), p);
+								scroll.updateTable();
 								JOptionPane.showMessageDialog(null, p + " points has been added to " + id.getText() + "!", "Update", JOptionPane.INFORMATION_MESSAGE);
 								points.setForeground(Color.GRAY);
 								points.setText(MESSAGE);
@@ -202,6 +204,8 @@ public class Users extends JPanel {
 						if (!input.equals(MESSAGE)) {
 							try {				//NEED TO ADD POINTS TO THE USER HERE!!!!!!!!!!!!!!!!!!!!!!
 								int p = Integer.parseInt(input);
+								my_bot.getAllUnP().incrementTankerPoints(id.getText(), -p);
+								scroll.updateTable();
 								JOptionPane.showMessageDialog(null, p + " points has been taken from " + id.getText() + "!", "Update", JOptionPane.INFORMATION_MESSAGE);
 								points.setForeground(Color.GRAY);
 								points.setText(MESSAGE);
