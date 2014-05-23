@@ -244,14 +244,16 @@ public class CurrentViewers extends JPanel {
 			@Override
 			public void actionPerformed(ActionEvent e) {
 				if (e.getSource() == addAll) {
-					if (my_bot.getCurUsers().length > 0) {
-						int response;
+					if (scroll.getNumRow() > 0) {
+						int response = JOptionPane.NO_OPTION;
 						try {
-							int points = Integer.parseInt(JOptionPane.showInputDialog("Feelin' generous! Points give away time!"));
+							String input = JOptionPane.showInputDialog("Feelin' generous! Points give away time!");
+							int points = (input == null) ? 0 : Integer.parseInt(input);
+							//int points = Integer.parseInt(JOptionPane.showInputDialog("Feelin' generous! Points give away time!"));
 							if (points > 0) {
 								response = JOptionPane.showConfirmDialog(null, "Ready to be worshipped?", "Point GIVEaway", JOptionPane.YES_NO_OPTION);
 		
-							} else {
+							} else if (points < 0){
 								response = JOptionPane.showConfirmDialog(null, "Are you suuure? That minus sign will produce many sad faces...", "Point TAKEaway", JOptionPane.YES_NO_OPTION);
 							}
 							
@@ -265,6 +267,8 @@ public class CurrentViewers extends JPanel {
 						} catch (NumberFormatException ex) {
 							JOptionPane.showMessageDialog(null, "Integer points would be nice.", "Wrong Format", JOptionPane.INFORMATION_MESSAGE);
 						}
+					} else {
+						JOptionPane.showMessageDialog(null, "No one's here to witness your generosity...", "Sad-face", JOptionPane.INFORMATION_MESSAGE);
 					}
 				}
 			}
@@ -296,7 +300,7 @@ public class CurrentViewers extends JPanel {
 		Container mods = new Container();
 		mods.setLayout(new FlowLayout(FlowLayout.LEFT));
 		JLabel lbmods = new JLabel("Total Moderators:");
-		JLabel txmods = new JLabel("text");
+		JLabel txmods = new JLabel("N/A");
 		mods.add(lbmods);
 		mods.add(txmods);
 		
@@ -310,7 +314,7 @@ public class CurrentViewers extends JPanel {
 		Container vsubs = new Container();
 		vsubs.setLayout(new FlowLayout(FlowLayout.LEFT));
 		JLabel lbvsubs = new JLabel("Total Subscribers:");
-		JLabel txvsubs = new JLabel("test");
+		JLabel txvsubs = new JLabel("N/A");
 		vsubs.add(lbvsubs);
 		vsubs.add(txvsubs);
 
