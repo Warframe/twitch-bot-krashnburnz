@@ -677,6 +677,7 @@ public class MyBotApp extends JFrame implements Observer, Runnable{		//can't ext
 						myTabs.setEnabledAt(1, false);
 						myTabs.setEnabledAt(2, false);
 						myTabs.setEnabledAt(3, false);
+						myTabs.setSelectedIndex(0);
 
 		    	  }
 		        }

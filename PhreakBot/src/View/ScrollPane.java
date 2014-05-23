@@ -1,8 +1,5 @@
 /*  
- * Last Edited: 06/07/2013 by Ching-Ting
- * 
- * [NOTE]: To set up propertyChangeListener, setFlag() method MUST be called by
- * passing in a JLabel.
+ * Last Edited: 05/22/2014 by Ching-Ting
  */
 package View;
 
@@ -44,7 +41,7 @@ import Model.User;
  * This class populates the list of inputs into a table to be put onto the GUI.
  * 
  * @author Ching-Ting Huang
- * @version UWTCSS 360, Spring 2013. 3-squared-software-systems.
+ * @version 06/07/2013
  */
 public class ScrollPane {
 
@@ -56,7 +53,7 @@ public class ScrollPane {
 	/**
 	 * when tick==TICK_WAIT, JTable will force a repaint to keep up with accumulated point updates.
 	 */
-	private static final int TICK_WAIT = 8;
+	private static final int TICK_WAIT = 12;
 	
 	/**
 	 * counter to force JTable redraw after tick reach TICK_WAIT.
@@ -258,10 +255,12 @@ public class ScrollPane {
 			}
 		});
 
-		tableSetUp(table, para);
+		
 		if (para.equals("viewer") || para.equals("user")) {
-			cellMod(table);
+			cellMod();
 		}
+		tableSetUp(para);
+		
 		scrollPane = new JScrollPane(table);
 		table.setFillsViewportHeight(true);
 	} //modelSetup
@@ -305,8 +304,13 @@ public class ScrollPane {
 						update.cancel(true);
 					}
 				} else {
-					System.out.println("Updating CV...");
-					((DefaultTableModel)table.getModel()).fireTableDataChanged();
+					System.out.print("Updating CV...");
+					boolean update = updateCurrentUser();
+					if (update) {
+						System.out.print("updated.\n");
+					} else {
+						System.out.print("update failed.\n");
+					}
 					tick = 0;
 				}
 			}
@@ -325,18 +329,18 @@ public class ScrollPane {
 	 * 
 	 * @param table is the table.
 	 */
-	private void cellMod(JTable table) {
+	private void cellMod() {
 		for (int i = 0; i < table.getColumnCount(); i++) {
 			DefaultTableCellRenderer center = new DefaultTableCellRenderer() {
 				private static final long serialVersionUID = -3894436645096493165L;
 				@Override
-				public Component getTableCellRendererComponent(JTable table,
+				public Component getTableCellRendererComponent(JTable t,
 															   Object value, 
 															   boolean isSelected, 
 															   boolean hasFocus, 
 															   int row, 
 															   int column) {
-					Component c = super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
+					Component c = super.getTableCellRendererComponent(t, value, isSelected, hasFocus, row, column);
 					if (value.toString().equals("Yes")) {
 						c.setForeground(Color.GREEN);
 					} else if (value.toString().equals("No")) {
@@ -357,13 +361,14 @@ public class ScrollPane {
 	 * @param table is the JTable.
 	 * @author Ching-Ting Huang
 	 */
-	private void tableSetUp(final JTable table, final String type) {
+	private void tableSetUp(final String type) {
 		table.setCellSelectionEnabled(false);
 		table.setDragEnabled(false);
 		table.setRowSelectionAllowed(true);
 		table.setShowHorizontalLines(false);
 		table.setShowVerticalLines(false);
 		table.setAutoCreateRowSorter(true);
+		table.setAutoCreateColumnsFromModel(false);
 		table.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
 		
 		table.getSelectionModel().addListSelectionListener(new ListSelectionListener() {
@@ -432,6 +437,39 @@ public class ScrollPane {
 			data[i][4] = "No";
 		}
 		return data;
+	} //putAuthToArray
+	
+	/**
+	 * Force update entire JTable by time constraint.
+	 * 
+	 * @return success of update.
+	 */
+	private boolean updateCurrentUser() {
+		Map<User, Integer> unp = allUserNPoints.getUserMap();
+		curU = theBot.getCurUsers();
+		int userNum = curU.length;
+		Object[][] data = new Object[userNum][5];
+		String[] head = new String[table.getColumnCount()];
+		
+		for(int i = 0; i < userNum; i++) {
+			User user = curU[i];
+			data[i][0] = allUserNPoints.getRank(user.getNick());
+			data[i][1] = user.getNick();
+			if (unp.containsKey(user)) {
+				data[i][2] = unp.get(user);
+			} else {
+				data[i][2] = "N/A";
+			}
+			data[i][3] = "No";
+			data[i][4] = "No";
+		}
+		
+		for (int j = 0; j < table.getColumnCount(); j++) {
+			head[j] = table.getColumnName(j);
+		}
+		table.clearSelection();
+		((DefaultTableModel)table.getModel()).setDataVector(data, head);
+		return true;
 	} //putAuthToArray
 
 	/**
@@ -720,6 +758,7 @@ public class ScrollPane {
 						}
 					} //left size > 0
 				}
+				table.clearSelection();
 			} catch (Exception e) {
 				e.printStackTrace();
 			}

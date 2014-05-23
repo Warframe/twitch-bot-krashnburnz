@@ -126,7 +126,13 @@ public class CurrentViewers extends JPanel {
 					
 					viewerNum.setText("" + viewers);
 					for (int i = 0; i < viewers; i++) {
-						sum += (int) scroll.getData(i, 2);
+						if (scroll.getData(i, 2) instanceof Integer) {
+							sum += (int) scroll.getData(i, 2);
+
+						} else if (scroll.getData(i, 2) instanceof String) {
+							sum += Integer.parseInt((String) scroll.getData(i, 2));
+
+						}
 					}
 					totalPt.setText("" + sum);
 				}
