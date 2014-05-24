@@ -1065,7 +1065,7 @@ public class MyBot extends PircBot implements Observer{
 	    	if(this.currentlyStreaming && this.isConnected()) {//check to see if connected, currently streaming, and if its time to advertise accumulation of points
 	    		if(advertCounter == 0 || (isInitialAdvert && advertCounter != -1)) {
 	    			System.out.println("**ADVERT COUNTER IS 0, say message**");
-		    		sendMessage(my_channel, "Currently accumulating points. to check your points type !" + my_points_name);
+		    		sendMessage(my_channel, "Currently accumulating points. to check your points type !" + my_points_name+". To check your rank type !rank");
 		    		advertCounter = advertTimer;
 		    		isInitialAdvert = false;
 	    		} else if(advertCounter == -1) {
