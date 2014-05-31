@@ -431,7 +431,7 @@ public class ScrollPane {
 			if (unp.containsKey(user)) {
 				data[i][2] = unp.get(user);
 			} else {
-				data[i][2] = "N/A";
+				data[i][2] = "0";
 			}
 			data[i][3] = "No";
 			data[i][4] = "No";
@@ -458,7 +458,7 @@ public class ScrollPane {
 			if (unp.containsKey(user)) {
 				data[i][2] = unp.get(user);
 			} else {
-				data[i][2] = "N/A";
+				data[i][2] = "0";
 			}
 			data[i][3] = "No";
 			data[i][4] = "No";
@@ -719,7 +719,7 @@ public class ScrollPane {
 							if (unp.containsKey(u)) {
 								data[2] = unp.get(u);
 							} else {
-								data[2] = "N/A";
+								data[2] = "0";
 							}
 							data[3] = "No";
 							data[4] = "No";
@@ -738,7 +738,7 @@ public class ScrollPane {
 							if (unp.containsKey(u)) {
 								data[2] = unp.get(u);
 							} else {
-								data[2] = "N/A";
+								data[2] = "0";
 							}
 							data[3] = "No";
 							data[4] = "No";
