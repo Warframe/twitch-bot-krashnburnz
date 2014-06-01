@@ -745,6 +745,8 @@ public class MyBotApp extends JFrame implements Observer, Runnable{		//can't ext
 			
 			if (currentViewerPanel instanceof CurrentViewers) {
 				((CurrentViewers) currentViewerPanel).stopTimer();
+			} else if (usersPanel instanceof Users) {
+				((Users) usersPanel).stopTimer();
 			}
 			
 			MyBotApp.this.dispose();

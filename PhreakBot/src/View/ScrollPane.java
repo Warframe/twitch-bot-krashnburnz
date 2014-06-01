@@ -50,13 +50,17 @@ public class ScrollPane {
 	 */
 	private static final int UPDATE_SEC = 25;
 	
+	
+	private static final int RENEW_MIN = 5;
+	
+	
 	/**
 	 * when tick==TICK_WAIT, JTable will force a repaint to keep up with accumulated point updates.
 	 */
 	private static final int TICK_WAIT = 12;
 	
 	/**
-	 * counter to force JTable redraw after tick reach TICK_WAIT.
+	 * counter to force JTable for Current User tab to redraw after tick reach TICK_WAIT.
 	 */
 	private static int tick = 0;
 	
@@ -145,7 +149,9 @@ public class ScrollPane {
 		theBot = bot;
 		checkData();
 		if (para.equals("viewer")) {
-			setTime();
+			setViewerTime();
+		} else if (para.equals("user")) {
+			setUserTime();
 		}
 		row = -1;
 		Object[][] data = getList(para);
@@ -286,7 +292,7 @@ public class ScrollPane {
 	/**
 	 * Initialize timer and set up thread to check for updates in data based on timer.
 	 */
-	private void setTime() {
+	private void setViewerTime() {
 		int delay = UPDATE_SEC * 1000;
 		ActionListener checkUpdate = new ActionListener() {
 			@Override
@@ -305,7 +311,7 @@ public class ScrollPane {
 					}
 				} else {
 					System.out.print("Updating CV...");
-					boolean update = updateCurrentUser();
+					boolean update = updateTable("viewer");
 					if (update) {
 						System.out.print("updated.\n");
 					} else {
@@ -317,8 +323,30 @@ public class ScrollPane {
 		};
 		timer = new Timer(delay, checkUpdate);
 		timer.start();
-		System.out.println("Check current viewer: start.");
+		System.out.println("CV-timer: start.");
 	} //setTime
+	
+	/**
+	 * Initialize timer to update entire User tab JTable by time.
+	 */
+	private void setUserTime() {
+		int delay = (RENEW_MIN * 60) * 1000;		//5min
+		ActionListener checkUpdate = new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				System.out.print("Updating Users...");
+				boolean update = updateTable("user");
+				if (update) {
+					System.out.print("updated.\n");
+				} else {
+					System.out.print("update failed.\n");
+				}
+			}
+		};
+		timer = new Timer(delay, checkUpdate);
+		timer.start();
+		System.out.println("U-timer: start.");
+	}
 	
 	/**
 	 * Using DefaultTableCellRenderer to accomplish:
@@ -444,31 +472,17 @@ public class ScrollPane {
 	 * 
 	 * @return success of update.
 	 */
-	private boolean updateCurrentUser() {
-		Map<User, Integer> unp = allUserNPoints.getUserMap();
-		curU = theBot.getCurUsers();
-		int userNum = curU.length;
-		Object[][] data = new Object[userNum][5];
-		String[] head = new String[table.getColumnCount()];
-		
-		for(int i = 0; i < userNum; i++) {
-			User user = curU[i];
-			data[i][0] = allUserNPoints.getRank(user.getNick());
-			data[i][1] = user.getNick();
-			if (unp.containsKey(user)) {
-				data[i][2] = unp.get(user);
-			} else {
-				data[i][2] = "0";
+	private boolean updateTable(final String para) {
+		Object[][] data = para.equals("viewer") ? putCurUserToArray() : putAllUserToArray();
+		for (int i = 0; i < data.length; i++) {
+			for (int j = 0; j < data[0].length; j++) {
+				((DefaultTableModel) table.getModel()).setValueAt(data[i][j], i, j);
 			}
-			data[i][3] = "No";
-			data[i][4] = "No";
 		}
-		
-		for (int j = 0; j < table.getColumnCount(); j++) {
-			head[j] = table.getColumnName(j);
+		if (para.equals("user") && row > -1) {
+			int selected = table.convertRowIndexToView(row);
+			table.setRowSelectionInterval(selected, selected);
 		}
-		table.clearSelection();
-		((DefaultTableModel)table.getModel()).setDataVector(data, head);
 		return true;
 	} //putAuthToArray
 

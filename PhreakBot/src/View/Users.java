@@ -376,4 +376,13 @@ public class Users extends JPanel {
 		grid.add(isSpecial);
 		return grid;
 	} //other
+	
+	/**
+	 * Used for shutting down program.
+	 * 
+	 * @return whether the timer is still running.
+	 */
+	public boolean stopTimer() {
+		return scroll.stopUpdateTimer();
+	} //stopTimer
 } //class
