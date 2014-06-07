@@ -256,7 +256,7 @@ public class ScrollPane {
 			@Override
 			public void tableChanged(TableModelEvent e) {
 				if (viewerUpdate != null) {
-					viewerUpdate.setText(viewerUpdate.getText() + "+");
+					viewerUpdate.setText(viewerUpdate.getText().toString() + "+");
 				}
 			}
 		});
@@ -403,12 +403,18 @@ public class ScrollPane {
 			@Override
 			public void valueChanged(ListSelectionEvent e) {
 				if (!e.getValueIsAdjusting()) {
-					row = table.convertRowIndexToModel(table.getSelectedRow());
-					if (row >= 0) {
-						if (flag != null) {
-							flag.setText(flag.getText() + "+");
+					try {
+						row = table.convertRowIndexToModel(table.getSelectedRow());
+						if (row >= 0) {
+							if (flag != null) {
+								flag.setText(flag.getText() + "+");
+							}
 						}
+					} catch (IndexOutOfBoundsException f) {
+						
 					}
+
+
 				}
 			}
 
