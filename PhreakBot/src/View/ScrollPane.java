@@ -84,6 +84,8 @@ public class ScrollPane {
 	 */
 	private MyBotUserPoints allUserNPoints;
 	
+	private List<String> mods;
+	
 	/**
 	 * array of all users currently watching channel.
 	 */
@@ -147,7 +149,7 @@ public class ScrollPane {
 	 */
 	public ScrollPane(final MyBot bot, final String para) {
 		theBot = bot;
-		checkData();
+		init();
 		if (para.equals("viewer")) {
 			setViewerTime();
 		} else if (para.equals("user")) {
@@ -157,7 +159,7 @@ public class ScrollPane {
 		Object[][] data = getList(para);
 		String[] header = getHeader(para);		
 		modelSetup(data, header, para);
-	} //constructor (w/ flag)
+	} //constructor
 	
 	private void modelSetup(Object[][] data, String[] header, String para) {
 		//Note: this DefaultTableModel is used only for User/Current Viewer tab, NOT for Version tab!
@@ -275,7 +277,8 @@ public class ScrollPane {
 	 * Sets boolean flag for whether data is available to be put into JTable or not. If they are available, 
 	 * fields are initialized. If not, boolean flags and place holders are set.
 	 */
-	private void checkData() {
+	private void init() {
+		mods = theBot.getMods();
 		if (theBot.getAllUnP().getUserMap().size() > 0) {
 			allUserEmpty = false;
 		}
@@ -403,16 +406,16 @@ public class ScrollPane {
 			@Override
 			public void valueChanged(ListSelectionEvent e) {
 				if (!e.getValueIsAdjusting()) {
-					try {
+					//try {
 						row = table.convertRowIndexToModel(table.getSelectedRow());
 						if (row >= 0) {
 							if (flag != null) {
 								flag.setText(flag.getText() + "+");
 							}
 						}
-					} catch (IndexOutOfBoundsException f) {
+					//} catch (IndexOutOfBoundsException f) {
 						
-					}
+					//}
 
 
 				}
@@ -439,7 +442,7 @@ public class ScrollPane {
 			data[count][1] = entry.getKey().getNick();
 			data[count][2] = entry.getValue();
 			data[count][3] = "No";
-			data[count][4] = "No";
+			data[count][4] = mods.contains(entry.getKey().getNick()) ? "Yes" : "No";
 			count++;
 		}
 		return data;
@@ -468,7 +471,7 @@ public class ScrollPane {
 				data[i][2] = "0";
 			}
 			data[i][3] = "No";
-			data[i][4] = "No";
+			data[i][4] = mods.contains(user.getNick()) ? "Yes" : "No";
 		}
 		return data;
 	} //putAuthToArray
@@ -742,7 +745,7 @@ public class ScrollPane {
 								data[2] = "0";
 							}
 							data[3] = "No";
-							data[4] = "No";
+							data[4] = mods.contains(u.getNick()) ? "Yes" : "No";
 							((DefaultTableModel) table.getModel()).insertRow(0, data);
 						}
 					}
@@ -761,7 +764,7 @@ public class ScrollPane {
 								data[2] = "0";
 							}
 							data[3] = "No";
-							data[4] = "No";
+							data[4] = mods.contains(u.getNick()) ? "Yes" : "No";
 							((DefaultTableModel) table.getModel()).insertRow(0, data);
 						}
 					} //join size j > 0
