@@ -46,6 +46,11 @@ public class CurrentViewers extends JPanel {
 	private MyBot my_bot;
 	
 	/**
+	 * Controller
+	 */
+	private MyBotApp my_bot_app;
+	
+	/**
 	 * The scroll pane containing all viewers' metadata that has ever been to the streamer's channel.
 	 */
 	private ScrollPane scroll;
@@ -84,9 +89,11 @@ public class CurrentViewers extends JPanel {
 	 * Constructor: initialize class & get access to controller
 	 * 
 	 * @param bot is the controller
+	 * @param myBotApp 
 	 */
-	public CurrentViewers(MyBot bot) {
+	public CurrentViewers(MyBot bot, MyBotApp myBotApp) {
 		my_bot = bot;
+		my_bot_app = myBotApp;
 		scroll = new ScrollPane(my_bot, "viewer");
 		viewerNum = new JLabel("0");
 		totalPt = new JLabel("0");
@@ -174,7 +181,7 @@ public class CurrentViewers extends JPanel {
 		final JTextField points = new JTextField(MESSAGE, 18);
 		final JButton add = new JButton("+ Points");
 		final JButton sub = new JButton("- Points");
-		final JButton addAll = new JButton("Generous");
+		final JButton addAll = new JButton("+ Give All");
 		
 		points.setForeground(Color.GRAY);
 		points.addMouseListener(new MouseAdapter() {
@@ -195,6 +202,7 @@ public class CurrentViewers extends JPanel {
 								int p = Integer.parseInt(input);
 								my_bot.getAllUnP().incrementTankerPoints(id.getText(), p);
 								scroll.updateTable(scroll.getSelectedRowNum(), 2, p);
+								my_bot_app.updateView(1, id.getText(), p);
 								JOptionPane.showMessageDialog(null, p + " points has been added to " + id.getText() + "!", "Update", JOptionPane.INFORMATION_MESSAGE);
 								points.setForeground(Color.GRAY);
 								points.setText(MESSAGE);
@@ -222,7 +230,8 @@ public class CurrentViewers extends JPanel {
 							try {				
 								int p = Integer.parseInt(input);
 								my_bot.getAllUnP().incrementTankerPoints(id.getText(), -p);
-								scroll.updateTable(scroll.getSelectedRowNum(), 2, -p);								
+								scroll.updateTable(scroll.getSelectedRowNum(), 2, -p);
+								my_bot_app.updateView(1, id.getText(), -p);
 								JOptionPane.showMessageDialog(null, p + " points has been taken from " + id.getText() + "!", "Update", JOptionPane.INFORMATION_MESSAGE);
 								points.setForeground(Color.GRAY);
 								points.setText(MESSAGE);
@@ -384,4 +393,21 @@ public class CurrentViewers extends JPanel {
 	public boolean stopTimer() {
 		return scroll.stopUpdateTimer();
 	} //stopTimer
+	
+	public void updateMyView(String userName, int points) {
+		boolean found = false;
+		for (int i = 0; i < scroll.getNumRow(); i++) {
+			if (userName.equals(scroll.getData(i, 1))) {
+				scroll.scrollTo(i);
+				scroll.setFocusTo(i);
+				found = true;
+				scroll.updateTable(scroll.getSelectedRowNum(), 2, points);	
+			}
+		}
+		
+		if (!found) {
+			JOptionPane.showMessageDialog(null, "No match found CurrentViewers list. Please try again.", "Search Result", JOptionPane.INFORMATION_MESSAGE);
+		}
+		
+	}
 } //CurrentViewers

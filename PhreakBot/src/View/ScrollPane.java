@@ -781,7 +781,7 @@ public class ScrollPane {
 						}
 					} //left size > 0
 				}
-				table.clearSelection();
+				//table.clearSelection();
 			} catch (Exception e) {
 				e.printStackTrace();
 			}

@@ -813,8 +813,8 @@ public class MyBotApp extends JFrame implements Observer, Runnable{		//can't ext
 					theBot.setAdvertTimer(checkAdvertTimer());
 					
 					//New location for ScrollPane Panel
-					currentViewerPanel = new CurrentViewers(theBot);
-					usersPanel = new Users(theBot);
+					currentViewerPanel = new CurrentViewers(theBot, this);
+					usersPanel = new Users(theBot, this);
 					myTabs.setComponentAt(1, currentViewerPanel);
 					myTabs.setComponentAt(3, usersPanel);
 					
@@ -899,5 +899,16 @@ public class MyBotApp extends JFrame implements Observer, Runnable{		//can't ext
 			advertTimer = 5;
 		}
 		return advertTimer;
+	}
+	
+	public void updateView(int i, String name, int p) {
+		int tabType = i;
+		if(tabType == 2) { //CurrentViewers Tab is calling update
+			((CurrentViewers) currentViewerPanel).updateMyView(name, p);
+
+		} else if(tabType == 1) {//Users tab is calling update
+			((Users) usersPanel).updateMyView(name, p);
+		}
+		
 	}
 } //class
