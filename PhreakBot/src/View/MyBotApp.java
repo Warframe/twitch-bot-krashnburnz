@@ -901,12 +901,22 @@ public class MyBotApp extends JFrame implements Observer, Runnable{		//can't ext
 		return advertTimer;
 	}
 	
+	/**
+	 * Callback Method used to keep the Panels in sync as far as User points are concerned.
+	 * When panels add/subtract points, this methoid is called in the GUI as a callback, 
+	 * which will then call the Update View method for that specific Panel.
+	 * 
+	 * Panels: if i = 1 its Users Panel calling, if i = 2 its CurrentViewer panel calling
+	 * @param userName  of the user having their points edited
+	 * @param points  Points that were added or subtracted
+	 * @param i    the Panel Type
+	 */
 	public void updateView(int i, String name, int p) {
 		int tabType = i;
-		if(tabType == 2) { //CurrentViewers Tab is calling update
+		if(tabType == 2) { //Users Tab is calling update
 			((CurrentViewers) currentViewerPanel).updateMyView(name, p);
 
-		} else if(tabType == 1) {//Users tab is calling update
+		} else if(tabType == 1) {//CurrentViewer tab is calling update
 			((Users) usersPanel).updateMyView(name, p);
 		}
 		

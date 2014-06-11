@@ -397,6 +397,13 @@ public class Users extends JPanel {
 		return scroll.stopUpdateTimer();
 	} //stopTimer
 	
+	/**
+	 * Method used to keep the Panels in sync as far as User points are concerned.
+	 * When other panels add/subtract points, this they callback to the GUi, that
+	 * will then call this method to update this panel.
+	 * @param userName
+	 * @param points
+	 */
 	public void updateMyView(String userName, int points) {
 		boolean found = false;
 		for (int i = 0; i < scroll.getNumRow() - 1; i++) {
