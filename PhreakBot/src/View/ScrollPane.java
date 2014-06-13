@@ -641,10 +641,14 @@ public class ScrollPane {
 	 * @param newpt program-user point input to be added/subtracted to a specific user based on selected row.
 	 * @return whether the operation is successful.
 	 */
-	public boolean updateTable(int row, int col, int newpt) {
+	public boolean updateTable(final int row, final int col, final int newpt) {
 		//int r = table.convertRowIndexToView(row);
-		int oldpt = (int) ((DefaultTableModel) table.getModel()).getValueAt(row, col);
-		((DefaultTableModel)table.getModel()).setValueAt(oldpt + newpt, row, col);
+		SwingUtilities.invokeLater(new Runnable() {
+			public void run() {
+				int oldpt = (int) ((DefaultTableModel) table.getModel()).getValueAt(row, col);
+				((DefaultTableModel)table.getModel()).setValueAt(oldpt + newpt, row, col);
+			}
+		});
 		return true;
 	} //updateTable
 

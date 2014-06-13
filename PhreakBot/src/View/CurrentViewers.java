@@ -68,17 +68,17 @@ public class CurrentViewers extends JPanel {
 	/**
 	 * After selecting a viewer from the scroll pane, this shows whether this viewer is a subscriber.
 	 */
-	private boolean isASub = false;
+	private JCheckBox isASub = new JCheckBox("Is Sub?");
 	
 	/**
 	 * After selecting a viewer from the scroll pane, this shows whether this viewer is a moderator.
 	 */
-	private boolean isAMod = false;
+	private JCheckBox isAMod = new JCheckBox("Is Mod?");
 	
 	/**
 	 * After selecting a viewer from the scroll pane, this shows whether this viewer is "SPECIAL" (future feature?).
 	 */
-	private boolean isVIP = true;
+	private JCheckBox isVIP = new JCheckBox("Special?");
 	
 	/**
 	 * Check if a viewer is being selected in the scroll panel (add/subtract point management check).
@@ -115,9 +115,9 @@ public class CurrentViewers extends JPanel {
 					int selectedRow = scroll.getSelectedRowNum();
 					id.setText((String) scroll.getData(selectedRow, 1));
 					String sub = (String) scroll.getData(selectedRow, 3);
-					isASub = sub.equals("Yes") ? true : false;
+					isASub.setSelected(sub.equals("Yes") ? true : false);
 					String mod = (String) scroll.getData(selectedRow, 4);
-					isAMod = mod.equals("Yes") ? true : false;
+					isAMod.setSelected(mod.equals("Yes") ? true : false);
 					
 				}
 			}
@@ -271,6 +271,7 @@ public class CurrentViewers extends JPanel {
 								for (int i = 0; i < currentUser.length; i++) {
 									my_bot.getAllUnP().incrementTankerPoints(currentUser[i].getNick(), points);
 									scroll.updateTable(i, 2, points);
+									my_bot_app.updateView(1, id.getText(), points);
 								}
 							}
 						} catch (NumberFormatException ex) {
@@ -343,10 +344,9 @@ public class CurrentViewers extends JPanel {
 		Container grid = new Container();
 		grid.setLayout(new GridLayout(3, 1));
 
-		JCheckBox isSub = new JCheckBox("Is Sub?");
-		isSub.setHorizontalTextPosition(SwingConstants.LEFT);
-		isSub.setSelected(isASub);
-		isSub.addActionListener(new ActionListener() {
+		isASub.setEnabled(false);
+		isASub.setHorizontalTextPosition(SwingConstants.LEFT);
+		isASub.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent arg0) {
 				// TODO Auto-generated method stub
@@ -355,10 +355,8 @@ public class CurrentViewers extends JPanel {
 			
 		});
 		
-		JCheckBox isMod = new JCheckBox("Is Mod?");
-		isMod.setHorizontalTextPosition(SwingConstants.LEFT);
-		isMod.setSelected(isAMod);
-		isMod.addActionListener(new ActionListener() {
+		isAMod.setHorizontalTextPosition(SwingConstants.LEFT);
+		isAMod.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
 				// TODO Auto-generated method stub
@@ -367,10 +365,9 @@ public class CurrentViewers extends JPanel {
 			
 		});
 		
-		JCheckBox isSpecial = new JCheckBox("Special");
-		isSpecial.setHorizontalTextPosition(SwingConstants.LEFT);
-		isSpecial.setSelected(isVIP);
-		isSpecial.addActionListener(new ActionListener() {
+		isVIP.setEnabled(false);
+		isVIP.setHorizontalTextPosition(SwingConstants.LEFT);
+		isVIP.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
 				// TODO Auto-generated method stub
@@ -379,9 +376,9 @@ public class CurrentViewers extends JPanel {
 			
 		});
 		
-		grid.add(isSub);
-		grid.add(isMod);
-		grid.add(isSpecial);
+		grid.add(isASub);
+		grid.add(isAMod);
+		grid.add(isVIP);
 		return grid;
 	} //other
 	
