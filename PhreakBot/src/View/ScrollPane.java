@@ -296,7 +296,8 @@ public class ScrollPane {
 	 * Initialize timer and set up thread to check for updates in data based on timer.
 	 */
 	private void setViewerTime() {
-		int delay = UPDATE_SEC * 1000;
+		int iniDelay = 15 * 1000; 			//15s delay initially
+		int delay = UPDATE_SEC * 1000;		//25s delay after timer initialize
 		ActionListener checkUpdate = new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
@@ -324,8 +325,9 @@ public class ScrollPane {
 				}
 			}
 		};
-		timer = new Timer(delay, checkUpdate);
+		timer = new Timer(iniDelay, checkUpdate);
 		timer.start();
+		timer.setDelay(delay);
 		System.out.println("CV-timer: start.");
 	} //setTime
 	

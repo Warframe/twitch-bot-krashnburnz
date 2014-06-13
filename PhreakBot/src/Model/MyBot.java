@@ -1251,4 +1251,17 @@ public class MyBot extends PircBot implements Observer{
 	public MyUpdateUsers updateUsers() {
 		return my_updateUsers;
 	}
+	
+	public String getChannelName() {
+		return my_channel;
+	}
+	
+	public String getBotName() {
+		return my_bot_name;
+		
+	}
+	
+	public String getPointsName() {
+		return my_points_name;
+	}
 }

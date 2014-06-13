@@ -273,6 +273,11 @@ public class CurrentViewers extends JPanel {
 									scroll.updateTable(i, 2, points);
 									my_bot_app.updateView(1, id.getText(), points);
 								}
+								
+								if (points > 0) {
+									my_bot.sendMessage(my_bot.getChannelName(), my_bot.getBotName() + ": " + points + " " + my_bot.getPointsName() + " added to every viewer currently watching!");
+								}
+								
 							}
 						} catch (NumberFormatException ex) {
 							JOptionPane.showMessageDialog(null, "Integer points would be nice.", "Wrong Format", JOptionPane.INFORMATION_MESSAGE);
