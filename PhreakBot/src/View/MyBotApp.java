@@ -83,7 +83,7 @@ public class MyBotApp extends JFrame implements Observer, Runnable{		//can't ext
 	private boolean connectFlag;
 	private ArrayList<String> thebetaUsers;
 	private String [] theUsersToCheck;
-	private boolean duringClosedbeta = true;
+	private boolean duringClosedbeta = false;
 	private final JCheckBoxMenuItem debugSettingItem;
 	private Frame tempFrame = new JFrame();
 	private Thread threadBtn;
@@ -475,15 +475,6 @@ public class MyBotApp extends JFrame implements Observer, Runnable{		//can't ext
 		//create image icon for the frame
 	    ImageIcon imgicon = new ImageIcon("cloud.png");
         this.setIconImage(imgicon.getImage());
-        try {
-			getTheFile();
-		} catch (ClassNotFoundException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
 		pack();
 		setLocationRelativeTo(null);
 		setVisible(true);
@@ -526,27 +517,41 @@ public class MyBotApp extends JFrame implements Observer, Runnable{		//can't ext
 	    }
 	}
 	
-	private void getTheFile() throws IOException, ClassNotFoundException {
-		File txt = new File("javatest.txt");
-		txt.delete();
-	    if(!txt.exists()){
-	        try {
-				//FileDownloaderNEW.download("http://www64.zippyshare.com/d/69658232/41733/javatest.txt", "javatest.txt", false, false);
-	        	FileDownloaderNEW.download("http://www.pugetsoundvapes.com/phreakbot/javatest.txt", "javatest.txt", false, false);
-	        	
-			} catch (Exception e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
-	    }
-	    Scanner s = new Scanner(new File("javatest.txt"));
-	    thebetaUsers = new ArrayList<String>();
-	    while (s.hasNext()){
-	    	thebetaUsers.add(s.next());
-	    }
-	    s.close();
-
-
+	/**
+	 * Method that will download and populate a list containing authorized
+	 * channels that can use the bot.
+	 * 
+	 * If the bot is in closed beta (Pre July 7th 2014), then it will download
+	 * the authorized channels that are participating in the closed beta.
+	 * 
+	 * If the bot is in open beta, or any phase after that (Post July 7th 2014), 
+	 * any channel can be connected to without a file
+	 * or a check being made. 
+	 */
+	private void getTheFile(String myArgs) throws IOException, ClassNotFoundException {
+		if(duringClosedbeta) {
+			File txt = new File("javatest.txt");
+			txt.delete();
+		    if(!txt.exists()){
+		        try {
+					//FileDownloaderNEW.download("http://www64.zippyshare.com/d/69658232/41733/javatest.txt", "javatest.txt", false, false);
+		        	FileDownloaderNEW.download("http://www.pugetsoundvapes.com/phreakbot/javatest.txt", "javatest.txt", false, false);
+		        	
+				} catch (Exception e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+		    }
+		    Scanner s = new Scanner(new File("javatest.txt"));
+		    thebetaUsers = new ArrayList<String>();
+		    while (s.hasNext()){
+		    	thebetaUsers.add(s.next());
+		    }
+		    s.close();
+		} else {
+		    thebetaUsers = new ArrayList<String>();
+		    thebetaUsers.add(myArgs);
+		}
 	}
 	
 	
@@ -780,90 +785,94 @@ public class MyBotApp extends JFrame implements Observer, Runnable{		//can't ext
 	
 	@SuppressWarnings("deprecation")
 	public void tryConnect(String[] myArgs) {
-		if(thebetaUsers.isEmpty()) {
-			  JOptionPane.showMessageDialog(null, "Unable to download beta user list to verify your authentication.... please try again later");
-		} else {
-			loginWindow.isConnectBtnEnabled(false);
-			tempFrame.setPreferredSize(new Dimension(400, 400));
-			tempFrame.add(consolePanel);
-			tempFrame.pack();
-			tempFrame.setLocationRelativeTo(this);
-			tempFrame.setVisible(true);
-			//primaryPanel.add(consolePanel);
-			AnimateConnect animatebtn = new AnimateConnect(loginWindow);
-			threadBtn = new Thread(animatebtn);
-			threadBtn.start();
-			loginWindow.isBotNametextEnabled(false);
-			loginWindow.isOathtextEnabled(false);
-			loginWindow.isChanneltextEnabled(false);
-			loginWindow.isIPtextEnabled(false);
-			loginWindow.isPorttextEnabled(false);
-			loginWindow.isPointstextEnabled(false);
-			loginWindow.isCredsCheckEnabled(false);
-			rbMenuItem0.setEnabled(false);
-			rbMenuItem5.setEnabled(false);
-			rbMenuItem10.setEnabled(false);
-			rbMenuItem30.setEnabled(false);
-			boolean gooduser = false;
-			Iterator<String> it = thebetaUsers.iterator();
-			while(it.hasNext() && !gooduser) {
-				String user = (String) it.next();
-				//System.out.println(user);
-				if(myArgs[1].equalsIgnoreCase(user) || !duringClosedbeta) {
-					thebotMain = new MyBotMain(myArgs);
-					theBot = thebotMain.getCreatedBot();
-					theBot.setAdvertTimer(checkAdvertTimer());
+		loginWindow.isConnectBtnEnabled(false);
+		tempFrame.setPreferredSize(new Dimension(400, 400));
+		tempFrame.add(consolePanel);
+		tempFrame.pack();
+		tempFrame.setLocationRelativeTo(this);
+		tempFrame.setVisible(true);
+		//primaryPanel.add(consolePanel);
+		AnimateConnect animatebtn = new AnimateConnect(loginWindow);
+		threadBtn = new Thread(animatebtn);
+		threadBtn.start();
+		loginWindow.isBotNametextEnabled(false);
+		loginWindow.isOathtextEnabled(false);
+		loginWindow.isChanneltextEnabled(false);
+		loginWindow.isIPtextEnabled(false);
+		loginWindow.isPorttextEnabled(false);
+		loginWindow.isPointstextEnabled(false);
+		loginWindow.isCredsCheckEnabled(false);
+		rbMenuItem0.setEnabled(false);
+		rbMenuItem5.setEnabled(false);
+		rbMenuItem10.setEnabled(false);
+		rbMenuItem30.setEnabled(false);
+		boolean gooduser = false;
+        try {
+			getTheFile(myArgs[1]);
+		} catch (ClassNotFoundException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		Iterator<String> it = thebetaUsers.iterator();
+		while(it.hasNext() && !gooduser) {
+			String user = (String) it.next();
+			//System.out.println(user);
+			if(myArgs[1].equalsIgnoreCase(user) || !duringClosedbeta) {
+				thebotMain = new MyBotMain(myArgs);
+				theBot = thebotMain.getCreatedBot();
+				theBot.setAdvertTimer(checkAdvertTimer());
+				
+				//New location for ScrollPane Panel
+				currentViewerPanel = new CurrentViewers(theBot, this);
+				usersPanel = new Users(theBot, this);
+				myTabs.setComponentAt(1, currentViewerPanel);
+				myTabs.setComponentAt(3, usersPanel);
+				
+				importMenuItem.setEnabled(true);
+				exportMenuItem.setEnabled(true);
+				connectFlag = true;
+				gooduser = true;
+				if(theBot.isConnected()) {
+					tempFrame.remove(consolePanel);
+					tempFrame.setVisible(false);
+					loginConsolePanel.add(consolePanel);
+					debugSettingItem.setEnabled(false);
+					loginWindow.isConnectBtnEnabled(false);
+					loginWindow.setVisible(false);
+					consolePanel.setVisible(true);
 					
-					//New location for ScrollPane Panel
-					currentViewerPanel = new CurrentViewers(theBot, this);
-					usersPanel = new Users(theBot, this);
-					myTabs.setComponentAt(1, currentViewerPanel);
-					myTabs.setComponentAt(3, usersPanel);
+					myTabs.setEnabledAt(1, true);
+					myTabs.setEnabledAt(2, true);
+					myTabs.setEnabledAt(3, true);
 					
-					importMenuItem.setEnabled(true);
-					exportMenuItem.setEnabled(true);
-					connectFlag = true;
-					gooduser = true;
-					if(theBot.isConnected()) {
-						tempFrame.remove(consolePanel);
-						tempFrame.setVisible(false);
-						loginConsolePanel.add(consolePanel);
-						debugSettingItem.setEnabled(false);
-						loginWindow.isConnectBtnEnabled(false);
-						loginWindow.setVisible(false);
-						consolePanel.setVisible(true);
-						
-						myTabs.setEnabledAt(1, true);
-						myTabs.setEnabledAt(2, true);
-						myTabs.setEnabledAt(3, true);
-						
-						logout.setEnabled(true);
-						theBot.wantDisconnect(false);
-						debugSettingItem.setEnabled(true);
-						threadBtn.stop();
-					}		
-				}
+					logout.setEnabled(true);
+					theBot.wantDisconnect(false);
+					debugSettingItem.setEnabled(true);
+					threadBtn.stop();
+				}		
 			}
-			if(!gooduser) {
-				threadBtn.stop();				
-				loginWindow.setConnectBtnName("Connect");
-				loginWindow.isConnectBtnEnabled(true);
-				JOptionPane.showMessageDialog(null, "You are not authorized to use the bot during the closed beta. \n" +
-													"If you would like to participate in the closed beta, please contact \n" +
-													"the developers. Donations sent to krashnburnz@yahoo.com during this time \n" +
-													"will ensure you a spot in the closed beta and all future releases. \n" +
-													"All donations received are used to further the development of this project. \n" +
-													"Thank you in advance for your support!");
+		}
+		if(!gooduser) {
+			threadBtn.stop();				
+			loginWindow.setConnectBtnName("Connect");
+			loginWindow.isConnectBtnEnabled(true);
+			JOptionPane.showMessageDialog(null, "You are not authorized to use the bot during the closed beta. \n" +
+												"If you would like to participate in the closed beta, please contact \n" +
+												"the developers. Donations sent to krashnburnz@yahoo.com during this time \n" +
+												"will ensure you a spot in the closed beta and all future releases. \n" +
+												"All donations received are used to further the development of this project. \n" +
+												"Thank you in advance for your support!");
 
-				loginWindow.isBotNametextEnabled(true);
-				loginWindow.isOathtextEnabled(true);
-				loginWindow.isChanneltextEnabled(true);
-				loginWindow.isIPtextEnabled(true);
-				loginWindow.isPorttextEnabled(true);
-				loginWindow.isPointstextEnabled(true);
-				loginWindow.isCredsCheckEnabled(true);
-
-			}
+			loginWindow.isBotNametextEnabled(true);
+			loginWindow.isOathtextEnabled(true);
+			loginWindow.isChanneltextEnabled(true);
+			loginWindow.isIPtextEnabled(true);
+			loginWindow.isPorttextEnabled(true);
+			loginWindow.isPointstextEnabled(true);
+			loginWindow.isCredsCheckEnabled(true);
 
 		}
 
