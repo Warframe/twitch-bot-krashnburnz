@@ -49,13 +49,19 @@ public class MyBotUserPoints extends Observable implements Runnable, Serializabl
 	int my_runCount;
 	List<String> sortedPointsList;
 	
+	
+	int myPointAccumDelay;
+	int myPointAccumAmount;
+	
 	private boolean lottoOn=false;
 	
-	public MyBotUserPoints(String the_channel, User[] the_Users) {
+	public MyBotUserPoints(String the_channel, User[] the_Users, int thePointAccumDelay, int thePointAccumAmount) {
 		updateUserMap();
 		setChannel(the_channel);
 		setCurrentUsers(the_Users);
 		my_runCount = 0; 
+		myPointAccumDelay = thePointAccumDelay * 60000; //Turns minutes from the input into Milliseconds which is required by the WAIT method for the thread
+		myPointAccumAmount = thePointAccumAmount ; //Actual amount of points to increment every time the thread wait is over.
 	}
 
 	public synchronized void run() {
@@ -80,11 +86,11 @@ public class MyBotUserPoints extends Observable implements Runnable, Serializabl
 		        		if(UsersMap.containsKey(my_Users[i])) {
 		            		int num = (int) UsersMap.get(my_Users[i]);
 		            		UsersMap.remove(my_Users[i]);
-		            		num += 1;
+		            		num += myPointAccumAmount;
 		            		UsersMap.put(my_Users[i], num);
 		            		//System.out.println("Added 1 point to " + my_Users[i]+" with a current total of " + UsersMap.get(my_Users[i]) + " points.");
 		        		} else {
-		            		UsersMap.put(my_Users[i], 1);
+		            		UsersMap.put(my_Users[i], myPointAccumAmount);
 		            		//System.out.println("Added new User to map and added 1 point to " + my_Users[i] +" with a total of " + UsersMap.get(my_Users[i]) + " points.");
 		        		}
 		        	}
@@ -97,7 +103,7 @@ public class MyBotUserPoints extends Observable implements Runnable, Serializabl
 	        	setChanged();
 	        	notifyObservers();
 	        	try {
-	    			wait (300000);
+	    			wait (myPointAccumDelay);
 	    		} catch (InterruptedException e) {
 	    			// TODO Auto-generated catch block
 	    			e.printStackTrace();

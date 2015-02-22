@@ -76,6 +76,14 @@ public class MyBotLogin extends JPanel implements Runnable{
 	private JLabel labelPointsName;
 	private JTextField txtPointName;
 	
+	//Accum Delay
+	private JLabel labelAccumDelay;
+	private JTextField txtAccumDelay;
+	
+	//Accum Amount
+	private JLabel labelAccumAmount;
+	private JTextField txtAccumAmount;
+	
 	//Save Credentials
 	private JLabel labelSaveCreds;
 	private JCheckBox cboxCredsSave;
@@ -101,7 +109,7 @@ public class MyBotLogin extends JPanel implements Runnable{
 	private void setup() {
 		this.setLayout(new FlowLayout());
 		windowSize = new Dimension(400, 250);
-		Dimension loginSize = new Dimension(200, 400);
+		Dimension loginSize = new Dimension(200, 525);
 		this.setPreferredSize(loginSize);
 		Dimension txtsize = new Dimension(200, 25);
 		//Bot Name
@@ -146,6 +154,20 @@ public class MyBotLogin extends JPanel implements Runnable{
 		txtPointName.setPreferredSize(txtsize);
 		this.add(labelPointsName);
 		this.add(txtPointName);
+		
+		//Accum Delay
+		labelAccumDelay = new JLabel("Point Accumulation Delay: ");
+		txtAccumDelay = new JTextField();
+		txtAccumDelay.setPreferredSize(txtsize);
+		this.add(labelAccumDelay);
+		this.add(txtAccumDelay);
+		
+		//Accum Amount
+		labelAccumAmount = new JLabel("Point Accumulation Amount: ");
+		txtAccumAmount = new JTextField();
+		txtAccumAmount.setPreferredSize(txtsize);
+		this.add(labelAccumAmount);
+		this.add(txtAccumAmount);
 		
 		//Save Credentials
 		labelSaveCreds= new JLabel("Save Credentials?");;
@@ -202,6 +224,10 @@ public class MyBotLogin extends JPanel implements Runnable{
 		    	  String twitchIp = getTwitchIp();
 		    	  String twitchPort = getTwitchPort();
 		    	  String pointName = getPointName();
+		    	  String thePointAccumDelay = getAccumDelay();
+		    	  String thePointAccumAmount = getAccumAmount();
+		    	  
+		    	  
 		    	  if(botName.isEmpty()) {
 		    		  JOptionPane.showMessageDialog(null, "Required information missing! Please type a bot name."); 
 		    	  } else if(channelName.isEmpty()) {
@@ -219,8 +245,15 @@ public class MyBotLogin extends JPanel implements Runnable{
 		    		  JOptionPane.showMessageDialog(null, "Please call the points something other then 'point' or 'points'. \n" +
 		    		  									"This could cause confusion when messages about 'points' are displayed!"); 
 		    		  
+		    	  }else if(thePointAccumDelay.isEmpty()) {
+		    		  JOptionPane.showMessageDialog(null, "You must specify the time Delay for Accumulation of Points. Default is 5 (mins). The default amount is now set"); 
+		    		  txtAccumDelay.setText(""+5);
+		    		  
+		    	  }else if(thePointAccumAmount.isEmpty()) {
+		    		  JOptionPane.showMessageDialog(null, "You must specify an Accumulation Point Amount. This is the amount each user will acquire for watching the stream every X amount of time (Accumation Delay). Default of 1 is now set"); 
+		    		  txtAccumAmount.setText(""+1);
 		    	  }else {
-		    		  String [] myArgs = new String [7];
+		    		  String [] myArgs = new String [9];
 		    		  myArgs[0] = botName;
 		    		  myArgs[1] = channelName;
 		    		  myArgs[2] = botPassword;
@@ -228,6 +261,8 @@ public class MyBotLogin extends JPanel implements Runnable{
 		    		  myArgs[4] = twitchPort;
 		    		  myArgs[5] = pointName;
 		    		  myArgs[6] = ""+mainBotApp.checkAdvertTimer();
+		    		  myArgs[7] = thePointAccumDelay;
+		    		  myArgs[8] = thePointAccumAmount;
 		    		  setConnectBtnName("Connecting...");
 		    		  isConnectBtnEnabled(false);
 		    		  mainBotApp.setStringOfUsers(myArgs);
@@ -369,6 +404,15 @@ public class MyBotLogin extends JPanel implements Runnable{
 		
 	}
 	
+	public String getAccumAmount() {
+		
+		return txtAccumAmount.getText();
+	}
+
+	public String getAccumDelay() {
+		return txtAccumDelay.getText();
+	}
+	
 	// Setters
 	public void setSaveCreds(boolean the_answer) {
 		cboxCredsSave.setSelected(the_answer);
@@ -405,6 +449,15 @@ public class MyBotLogin extends JPanel implements Runnable{
 	
 	public synchronized void setConnectBtnName(String the_text) {
 		btnConnect.setText(the_text);
+	}
+	
+	public void setAccumAmount(String amount) {
+		
+		txtAccumAmount.setText(""+amount);
+	}
+
+	public void setAccumDelay(String amount) {
+		txtAccumDelay.setText(""+amount);
 	}
 
 	@Override

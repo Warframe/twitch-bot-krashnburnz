@@ -234,7 +234,7 @@ public class MyBot extends PircBot implements Observer{
 
 
     public MyBot(String name, boolean lotteryEnabled, boolean accumulateOnStartUp, ArrayList<String> ops, String the_owner, String the_pointsname, int the_lotto_cost, 
-    		int the_lottery_timer, String channel, int advert_timer) {
+    		int the_lottery_timer, String channel, int advert_timer, int thePointAccumDelay, int thePointAccumAmount) {
     	
     	this.my_bot_name = name.toLowerCase();
         this.setName(name);
@@ -256,7 +256,7 @@ public class MyBot extends PircBot implements Observer{
         the_adverts = new ArrayList<String>();
         placedWages = new ArrayList<String>();
         
-        my_botUsers = new MyBotUserPoints(my_channel, my_users);
+        my_botUsers = new MyBotUserPoints(my_channel, my_users, thePointAccumDelay, thePointAccumAmount);  
     	Thread pointAdder_t = new Thread(my_botUsers);
     	my_botUsers.addObserver(this);
     	pointAdder_t.start();

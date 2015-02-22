@@ -10,7 +10,7 @@ import java.util.ArrayList;
 import java.util.Map;
 import java.util.Observable;
 
-public class MyCustomAdverts extends Observable implements Runnable, Serializable {
+public class LoadAndSaveSerialization extends Observable implements Runnable, Serializable {
 	
 	/**
 	 * 
@@ -23,11 +23,11 @@ public class MyCustomAdverts extends Observable implements Runnable, Serializabl
 	 * @param Map<User, Integer> the_Usermap
 	 * @param String The file name
 	 */
-	public void saveFile(ArrayList<String> the_customAdverts, String the_name) {   
+	public void saveFile(ArrayList<String> the_users, String the_name) {   
 	      try {
 	         FileOutputStream fileOut = new FileOutputStream(the_name);
 	         ObjectOutputStream out = new ObjectOutputStream(fileOut);
-	         out.writeObject(the_customAdverts);
+	         out.writeObject(the_users);
 	         out.close();
 	         fileOut.close();
 	        	System.out.println("Saving " + the_name + " to file");

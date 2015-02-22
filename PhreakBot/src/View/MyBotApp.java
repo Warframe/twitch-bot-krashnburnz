@@ -238,9 +238,8 @@ public class MyBotApp extends JFrame implements Observer, Runnable{		//can't ext
             	int result = JOptionPane.showOptionDialog(tempFrame,
             			"WARNING! Be very careful with this option. If used incorrectly \n" +
         					    "this can easily overwrite or erase your entire USER_MAP_FILE which stores\n"
-        					    + "your points for everyone! Please be sure to enable Backups under setting \n" +
-        					    "and open/close the software a few times for backups to be made. You can also manually \n" +
-        					    "create a backup of your USER_MAP_FILE by navigating to where your Phreak_Bot_.rar \n" +
+        					    + "your points for everyone! Please be sure to manually create a backup\n" +
+        					    "of your USER_MAP_FILE by navigating to where your Phreak_Bot_.rar \n" +
         					    "is opened from. Then just copy the USER_MAP_FILE and paste it in a safe place.\n \n"
         					    + "Do you understand the risk, have created a backup, and want to import points from \n" +
         					    "a plane .txt document (space delimented with       username      points            ? \n",
@@ -438,13 +437,13 @@ public class MyBotApp extends JFrame implements Observer, Runnable{		//can't ext
 		loginConsolePanel.add(loginScreen);
 		
 		//Setup the attributes for the console panel
-		loginConsolePanel.setPreferredSize(new Dimension(500, 500));
+		loginConsolePanel.setPreferredSize(new Dimension(500, 600));
 		loginConsolePanel.setVisible(true);
 		
 		setTitle("Stream Phreak Bot");
 		setDefaultCloseOperation(JFrame.DO_NOTHING_ON_CLOSE);
 		saveOnClosingWindow();
-		setPreferredSize(new Dimension(500, 540));
+		setPreferredSize(new Dimension(500, 650));
 		setLayout(new BorderLayout());
 		add(logoutbtn, BorderLayout.NORTH);
 		
@@ -593,6 +592,18 @@ public class MyBotApp extends JFrame implements Observer, Runnable{		//can't ext
 	            fileIn.close();
 	        	System.out.println("User settings loaded successfully.");
 	        	 loginWindow.setSaveCreds(true); //the exists, so make sure this box is checked
+	        	 
+	        	 /*
+	        	  *   myArgs[0] = botName;
+		    		  myArgs[1] = channelName;
+		    		  myArgs[2] = botPassword;
+		    		  myArgs[3] = twitchIp;
+		    		  myArgs[4] = twitchPort;
+		    		  myArgs[5] = pointName;
+		    		  myArgs[6] = ""+mainBotApp.checkAdvertTimer();
+		    		  myArgs[7] = thePointAccumDelay;
+		    		  myArgs[8] = thePointAccumAmount;
+	        	  */
 	        	 //Set the Connection window to the saved settings
 					loginWindow.setChannelName(user_settings.get(0));
 					loginWindow.setBotName(user_settings.get(1));
@@ -622,6 +633,11 @@ public class MyBotApp extends JFrame implements Observer, Runnable{		//can't ext
 						} else {
 							rbMenuBackupNo.setSelected(true);
 						}
+					}
+					if(user_settings.size() >= 9) {
+						System.out.println("User file does have the accumdelay and the accumAmount fields");
+						loginWindow.setAccumDelay(user_settings.get(8));
+						loginWindow.setAccumAmount(user_settings.get(9));
 					}
 
 	         }
@@ -769,6 +785,9 @@ public class MyBotApp extends JFrame implements Observer, Runnable{		//can't ext
 				user_settings.add("" + loginWindow.getPointName());
 				user_settings.add("" + checkAdvertTimer());
 				user_settings.add("" + savedBackupInt);
+				user_settings.add("" + loginWindow.getAccumDelay());
+				user_settings.add("" + loginWindow.getAccumAmount());
+				
 				saveFile(user_settings, "user_settings.txt");
 				
 			}

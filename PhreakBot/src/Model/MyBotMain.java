@@ -42,6 +42,8 @@ public class MyBotMain {
     	CHANNEL_OWNER = args[1];
     	POINTS_NAME = args[5];
     	advert_timer = Integer.parseInt(args[6]);
+    	int myPointAccumDelay = Integer.parseInt(args[7]);//int thePointAccumDelay, int thePointAccumAmount
+    	int myPointAccumAmount = Integer.parseInt(args[8]);
     	
 		System.out.println(System.getProperty("user.dir"));
 		
@@ -51,8 +53,7 @@ public class MyBotMain {
 		}
 		
         // Now start our bot up.
-        bot = new MyBot(BOTNAME, LOTTERY_ENABLED_ON_STARTUP, ACCUMULATE_POINTS_ON_STARTUP,the_ops, CHANNEL_OWNER, POINTS_NAME, LOTTERY_COST, LOTTERY_TIMER_MILLISEC, my_channel, advert_timer);
-        
+        bot = new MyBot(BOTNAME, LOTTERY_ENABLED_ON_STARTUP, ACCUMULATE_POINTS_ON_STARTUP,the_ops, CHANNEL_OWNER, POINTS_NAME, LOTTERY_COST, LOTTERY_TIMER_MILLISEC, my_channel, advert_timer, myPointAccumDelay, myPointAccumAmount);
         // Enable debugging output.
         bot.setVerbose(enable_verbose_debug);
         
